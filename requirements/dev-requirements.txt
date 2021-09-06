@@ -102,7 +102,7 @@ django-prometheus==1.0.15
     # via -r requirements/requirements.in
 django-storages[boto3]==1.7.1
     # via -r requirements/requirements.in
-django==2.2.19
+django==2.2.20
     # via
     #   -r requirements/requirements.in
     #   django-allauth
@@ -162,7 +162,7 @@ influxdb==5.2.1
     # via -r requirements/requirements.in
 itypes==1.1.0
     # via coreapi
-jinja2==2.10.1
+jinja2==2.11.3
     # via
     #   ansible
     #   coreschema
@@ -269,7 +269,7 @@ pytz==2018.7
     #   celery
     #   django
     #   influxdb
-pyyaml==5.3.1
+pyyaml==5.4
     # via
     #   -r requirements/requirements.in
     #   ansible
