@@ -120,8 +120,7 @@ class TestUserAliasModel(TestCase):
             alias_of=self.default_user
         )
         UserAlias.objects.create(
-            alias_name=self.VALID_ALIAS_NAME + "a",
-            alias_of=self.default_user
+            alias_name=f"{self.VALID_ALIAS_NAME}a", alias_of=self.default_user
         )
 
     @pytest.mark.database_integrity
@@ -153,8 +152,7 @@ class TestUserAliasModel(TestCase):
             alias_of=self.default_user
         )
         UserAlias.objects.create(
-            alias_name=self.VALID_ALIAS_NAME + "a",
-            alias_of=self.default_user
+            alias_name=f"{self.VALID_ALIAS_NAME}a", alias_of=self.default_user
         )
 
     @pytest.mark.database_integrity

@@ -37,18 +37,14 @@ class ActiveUserSerializer(BaseSerializer):
         fields = USER_FIELDS + ('authenticated', 'primary_email')
 
     def get_summary_fields(self, obj):
-        if not obj or not obj.is_authenticated:
-            return {}
-        d = super().get_summary_fields(obj)
-        return d
+        return super().get_summary_fields(obj) if obj and obj.is_authenticated else {}
 
     def get_authenticated(self, obj):
         return bool(obj.is_authenticated)
 
     def get_primary_email(self, obj):
         if obj and not isinstance(obj, AnonymousUser):
-            emails = EmailAddress.objects.filter(user=obj, primary=True)
-            if emails:
+            if emails := EmailAddress.objects.filter(user=obj, primary=True):
                 return emails[0].email
         return None
 

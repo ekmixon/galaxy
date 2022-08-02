@@ -64,7 +64,7 @@ class Command(BaseCommand):
                 u'token': token.token
             })
 
-        if len(task_users) == 0:
+        if not task_users:
             raise Exception(
                 u"No task workers found with valid GitHub tokens. "
                 u"Make sure your task workers are configured properly."
@@ -80,17 +80,12 @@ class Command(BaseCommand):
         for i in range(len(task_users)):
             start = size * i
             end = size * (i + 1)
-            logger.info(
-                u"User: {} Range: {} - {}"
-                .format(task_users[i]['username'], start, end)
-            )
+            logger.info(f"User: {task_users[i]['username']} Range: {start} - {end}")
             role_count = RefreshRoleCount.objects.create(
                 state='PENDING',
-                description=(
-                    'User: {} Range: {}-{}'
-                    .format(task_users[i]['username'], start, end)
-                )
+                description=f"User: {task_users[i]['username']} Range: {start}-{end}",
             )
+
             in_list.append(role_count.id)
             refresh_role_counts.delay(
                 start, end, task_users[i]['token'], role_count
@@ -104,7 +99,7 @@ class Command(BaseCommand):
             finished = True
             for obj in RefreshRoleCount.objects.filter(
                     Q(pk__in=in_list), ~Q(state='COMPLETED')):
-                if not obj.state == 'FINISHED':
+                if obj.state != 'FINISHED':
                     finished = False
                 else:
                     print(

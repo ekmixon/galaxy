@@ -65,8 +65,7 @@ def import_repository(task_id, user_initiated=False):
             user_initiated,
             has_failed=True
         )
-        import_task.finish_failed(
-            reason='Task "{}" failed: {}'.format(import_task.id, str(e)))
+        import_task.finish_failed(reason=f'Task "{import_task.id}" failed: {str(e)}')
     except Exception as e:
         user_notifications.repo_import.delay(
             import_task.id,
@@ -74,8 +73,7 @@ def import_repository(task_id, user_initiated=False):
             has_failed=True
         )
         LOG.exception(e)
-        import_task.finish_failed(
-            reason='Task "{}" failed: {}'.format(import_task.id, str(e)))
+        import_task.finish_failed(reason=f'Task "{import_task.id}" failed: {str(e)}')
         raise
 
 
@@ -85,8 +83,10 @@ def _import_repository(import_task, logger):
     repo_full_name = (
         repository.provider_namespace.name
         + "/" + repository.original_name)
-    logger.info(u'Starting import: task_id={}, repository={}'
-                .format(import_task.id, repo_full_name))
+    logger.info(
+        f'Starting import: task_id={import_task.id}, repository={repo_full_name}'
+    )
+
     logger.info(' ')
 
     token = _get_social_token(import_task)
@@ -142,7 +142,7 @@ def _import_repository(import_task, logger):
                 and content_info.role_meta.get('issue_tracker_url')):
             issue_tracker_url = content_info.role_meta['issue_tracker_url']
         elif gh_repo.has_issues:
-            issue_tracker_url = gh_repo.html_url + '/issues'
+            issue_tracker_url = f'{gh_repo.html_url}/issues'
         repository.issue_tracker_url = issue_tracker_url
         content_obj = importer.do_import()
 
@@ -195,11 +195,12 @@ def _import_repository(import_task, logger):
     namespace = repository.provider_namespace.namespace.name
 
     fields = {
-        'content_name': '{}.{}'.format(namespace, repository.name),
+        'content_name': f'{namespace}.{repository.name}',
         'content_id': repository.id,
         'community_score': repository.community_score,
         'quality_score': repository.quality_score,
     }
+
 
     serializers.influx_insert_internal({
         'measurement': 'content_score',
@@ -208,17 +209,17 @@ def _import_repository(import_task, logger):
 
 
 def _check_collection_name_conflict(ns, name):
-    collections = models.Collection.objects.filter(
+    if collections := models.Collection.objects.filter(
         namespace=ns,
         name=name,
-    )
-    if not collections:
+    ):
+        raise exc.ImportFailed(
+            f'A collection ({ns.name}.{name}) under the namespace {ns.name} '
+            'already exists, please use a different name for the role '
+            'via the meta/main.yml role_name attribute'
+        )
+    else:
         return
-    raise exc.ImportFailed(
-        f'A collection ({ns.name}.{name}) under the namespace {ns.name} '
-        'already exists, please use a different name for the role '
-        'via the meta/main.yml role_name attribute'
-    )
 
 
 def _update_task_msg_content_id(import_task):
@@ -246,16 +247,18 @@ def _update_task_msg_content_id(import_task):
 
 
 def _cleanup_old_task_msg(import_task):
-    old_task_ids = models.ImportTask.objects.filter(
-        repository=import_task.repository,
-    ).exclude(
-        id=import_task.id,
-    ).values_list(
-        'id',
-        flat=True,
-    )
-
-    if old_task_ids:
+    if (
+        old_task_ids := models.ImportTask.objects.filter(
+            repository=import_task.repository,
+        )
+        .exclude(
+            id=import_task.id,
+        )
+        .values_list(
+            'id',
+            flat=True,
+        )
+    ):
         old_task_msgs = models.ImportTaskMessage.objects.filter(
             task__in=old_task_ids
         )
@@ -305,10 +308,7 @@ def _update_readme(repository, readme, github_api, github_repo):
 
 
 def _update_repo_info(repository, gh_repo, commit_info, repo_description):
-    if repo_description:
-        repository.description = repo_description
-    else:
-        repository.description = gh_repo.description
+    repository.description = repo_description or gh_repo.description
     repository.stargazers_count = gh_repo.stargazers_count
     repository.watchers_count = gh_repo.subscribers_count
     repository.forks_count = gh_repo.forks_count
@@ -355,7 +355,7 @@ def _update_repository_versions(repository, github_repo, logger):
             },
         )
         if not created:
-            logger.warning('Version conflict: {}'.format(tag.name))
+            logger.warning(f'Version conflict: {tag.name}')
         else:
             tags_added = True
 
@@ -372,8 +372,7 @@ def _update_repository_versions(repository, github_repo, logger):
         version_obj = db_tags[version]
         commit_date = tag.commit.commit.author.date.replace(tzinfo=pytz.UTC)
         if version_obj.commit_date != commit_date:
-            logger.warning('Release date of version {} has changed.'
-                           .format(version_obj.tag))
+            logger.warning(f'Release date of version {version_obj.tag} has changed.')
             version_obj.commit_date = commit_date
             version_obj.commit_sha = tag.commit.commit.sha
             version_obj.save()

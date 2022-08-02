@@ -44,11 +44,7 @@ logger = logging.getLogger(__name__)
 def check_provider_access(provider, user, name):
     if provider.name.lower() == 'github':
         user_namespaces = GithubAPI(user=user).user_namespaces()
-        match = False
-        for ns in user_namespaces:
-            if ns['name'] == name:
-                match = True
-                break
+        match = any(ns['name'] == name for ns in user_namespaces)
         if not match:
             raise APIException(
                 "User does not have access to namespace "

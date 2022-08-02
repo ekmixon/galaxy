@@ -83,7 +83,7 @@ class ImportTask(PrimordialModel):
     )
 
     def __str__(self):
-        return '{}-{}'.format(self.id, self.state)
+        return f'{self.id}-{self.state}'
 
     def start(self):
         self.state = ImportTask.STATE_RUNNING
@@ -161,5 +161,4 @@ class ImportTaskMessage(PrimordialModel):
     )
 
     def __str__(self):
-        return "{}-{}-{}".format(
-            self.task.id, self.message_type, self.message_text)
+        return f"{self.task.id}-{self.message_type}-{self.message_text}"

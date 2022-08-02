@@ -72,7 +72,7 @@ def exception_handler(exc, context):
             data['message'] = exc.detail
 
         if len(errors) == 1 and 'field' not in errors[0]:
-            data.update(errors[0])
+            data |= errors[0]
         elif errors:
             data['errors'] = errors
 

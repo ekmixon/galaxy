@@ -118,15 +118,14 @@ def refresh_existing_user_repos(token, github_user):
              throws=(Exception,))
 @transaction.atomic
 def refresh_user_repos(user, token):
-    LOG.info(u"Refreshing User Repo Cache for {}".format(user.username))
+    LOG.info(f"Refreshing User Repo Cache for {user.username}")
 
     try:
         gh_api = github.Github(token)
     except github.GithubException as exc:
         user.cache_refreshed = True
         user.save()
-        msg = u"User {} Repo Cache Refresh Error: {}".format(
-            user.username, exc)
+        msg = f"User {user.username} Repo Cache Refresh Error: {exc}"
         LOG.error(msg)
         raise Exception(msg)
 
@@ -135,8 +134,7 @@ def refresh_user_repos(user, token):
     except github.GithubException as exc:
         user.cache_refreshed = True
         user.save()
-        msg = u"User {} Repo Cache Refresh Error: {}".format(
-            user.username, exc)
+        msg = f"User {user.username} Repo Cache Refresh Error: {exc}"
         LOG.error(msg)
         raise Exception(msg)
 
@@ -162,26 +160,26 @@ def refresh_user_repos(user, token):
              throws=(Exception,))
 @transaction.atomic
 def refresh_user_stars(user, token):
-    LOG.info(u"Refreshing User Stars for {}".format(user.username))
+    LOG.info(f"Refreshing User Stars for {user.username}")
 
     try:
         gh_api = github.Github(token)
     except github.GithubException as exc:
-        msg = u"User {} Refresh Stars: {}".format(user.username, exc)
+        msg = f"User {user.username} Refresh Stars: {exc}"
         LOG.error(msg)
         raise Exception(msg)
 
     try:
         ghu = gh_api.get_user()
     except github.GithubException as exc:
-        msg = u"User {} Refresh Stars: {}".format(user.username, exc)
+        msg = f"User {user.username} Refresh Stars: {exc}"
         LOG.error(msg)
         raise Exception(msg)
 
     try:
         subscriptions = ghu.get_subscriptions()
     except github.GithubException as exc:
-        msg = u"User {} Refresh Stars: {}".format(user.username, exc)
+        msg = f"User {user.username} Refresh Stars: {exc}"
         LOG.error(msg)
         raise Exception(msg)
 
@@ -243,7 +241,7 @@ def refresh_role_counts(start, end, token, tracker):
     gh_api = github.Github(token)
     for role in Content.objects.filter(is_valid=True, active=True,
                                        id__gt=start, id__lte=end):
-        full_name = "{}/{}".format(role.github_user, role.github_repo)
+        full_name = f"{role.github_user}/{role.github_repo}"
         try:
             repo = gh_api.get_repo(full_name, lazy=False)
         except github.UnknownObjectException:
@@ -285,8 +283,12 @@ def refresh_role_counts(start, end, token, tracker):
 @celery.task(name="galaxy.main.celerytasks.tasks.clear_stuck_imports")
 def clear_stuck_imports():
     one_hours_ago = timezone.now() - datetime.timedelta(seconds=3600)
-    LOG.info(u"Clear Stuck Imports: {}".format(
-        one_hours_ago.strftime("%Y-%m-%d %H:%M:%S")).encode('utf-8').strip())
+    LOG.info(
+        f'Clear Stuck Imports: {one_hours_ago.strftime("%Y-%m-%d %H:%M:%S")}'.encode(
+            'utf-8'
+        ).strip()
+    )
+
     try:
         for ri in ImportTask.objects.filter(
                 created__lte=one_hours_ago,
@@ -306,5 +308,5 @@ def clear_stuck_imports():
             ri.save()
             transaction.commit()
     except Exception as exc:
-        LOG.error(u"Clear Stuck Imports ERROR: {}".format(exc))
+        LOG.error(f"Clear Stuck Imports ERROR: {exc}")
         raise

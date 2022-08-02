@@ -42,16 +42,14 @@ class NotificationManger(object):
         self.repo = repo
         self.collection = collection
 
-        if db_message is None:
-            self.db_message = subject
-        else:
-            self.db_message = db_message
+        self.db_message = subject if db_message is None else db_message
 
     def render_email(self, context):
         text = self.email_template.format(**context)
         footer = email_footer_template.format(
-            preferences_link='{}/me/preferences/'.format(self.url)
+            preferences_link=f'{self.url}/me/preferences/'
         )
+
 
         return text + footer
 
@@ -60,7 +58,7 @@ class NotificationManger(object):
 
             # Create in app notification
             try:
-                if user.preferences['ui_' + self.preferences_name]:
+                if user.preferences[f'ui_{self.preferences_name}']:
                     models.UserNotification.objects.create(
                         user=user.user,
                         type=self.preferences_name,
@@ -99,7 +97,7 @@ def email_verification(email, code, username):
         site=Site.objects.get_current().domain
     )
 
-    url += '/me/preferences/?verify=' + code
+    url += f'/me/preferences/?verify={code}'
 
     message = email_verification_template.format(
         username=username,
@@ -143,9 +141,10 @@ def collection_import(task_id, has_failed=False):
     )
     ctx = {
         'status': status,
-        'content_name': '{}.{}'.format(task.namespace.name, task.name),
-        'import_url': '{}/my-imports'.format(notification.url),
+        'content_name': f'{task.namespace.name}.{task.name}',
+        'import_url': f'{notification.url}/my-imports',
     }
+
     notification.notify(ctx)
 
 
@@ -172,8 +171,8 @@ def repo_import(task_id, user_initiated, has_failed=False):
         preference = 'notify_import_success'
         status = 'succeeded'
 
-    subject = 'Ansible Galaxy: import of {} has {}'.format(repo.name, status)
-    db_message = 'Import {}: {}'.format(status, repo.name)
+    subject = f'Ansible Galaxy: import of {repo.name} has {status}'
+    db_message = f'Import {status}: {repo.name}'
 
     log_path = '/my-imports'
 
@@ -188,9 +187,10 @@ def repo_import(task_id, user_initiated, has_failed=False):
 
     ctx = {
         'status': status,
-        'content_name': '{}.{}'.format(author, repo.name),
-        'import_url': notification.url + log_path
+        'content_name': f'{author}.{repo.name}',
+        'import_url': notification.url + log_path,
     }
+
 
     notification.notify(ctx)
 
@@ -205,7 +205,7 @@ def collection_new_version(version_pk):
 
     collection = version.collection
     namespace_name = collection.namespace.name
-    full_name = '{}.{}'.format(namespace_name, collection.name)
+    full_name = f'{namespace_name}.{collection.name}'
     version_number = version.version
 
     notification = NotificationManger(
@@ -217,14 +217,15 @@ def collection_new_version(version_pk):
         collection=collection,
     )
 
-    path = '/{}/{}'.format(namespace_name, collection.name)
+    path = f'/{namespace_name}/{collection.name}'
 
     ctx = {
         'namespace_name': namespace_name,
         'content_name': full_name,
         'version': version_number,
-        'content_url': '{}{}'.format(notification.url, path),
+        'content_url': f'{notification.url}{path}',
     }
+
 
     notification.notify(ctx)
 
@@ -242,12 +243,13 @@ def repo_update(repo_id):
         email_template=repo_update_template,
         preferences_name='notify_content_release',
         preferences_list=followers,
-        subject='Ansible Galaxy: New version of ' + repo.name,
-        db_message='New version of: {}'.format(repo.name),
-        repo=repo
+        subject=f'Ansible Galaxy: New version of {repo.name}',
+        db_message=f'New version of: {repo.name}',
+        repo=repo,
     )
 
-    path = '/{}/{}/'.format(repo.provider_namespace.namespace.name, repo.name)
+
+    path = f'/{repo.provider_namespace.namespace.name}/{repo.name}/'
 
     ctx = {
         'namespace_name': author,
@@ -266,7 +268,7 @@ def coll_author_release(version_pk):
         namespaces_followed=version.collection.namespace,
     )
     author = version.collection.namespace.name
-    full_name = '{}.{}'.format(author, version.collection.name)
+    full_name = f'{author}.{version.collection.name}'
 
     notification = NotificationManger(
         email_template=author_release_template,
@@ -277,14 +279,15 @@ def coll_author_release(version_pk):
         collection=version.collection,
     )
 
-    path = '/{}/{}'.format(author, version.collection.name)
+    path = f'/{author}/{version.collection.name}'
 
     ctx = {
         'author_name': author,
         'type': 'collection',
         'content_name': full_name,
-        'content_url': '{}{}'.format(notification.url, path),
+        'content_url': f'{notification.url}{path}',
     }
+
     notification.notify(ctx)
 
 
@@ -302,16 +305,13 @@ def repo_author_release(repo_id):
         email_template=author_release_template,
         preferences_name='notify_author_release',
         preferences_list=followers,
-        subject='Ansible Galaxy: {} has released a new role'.format(
-            author
-        ),
-        db_message='New release from {}: {}'.format(
-            author, repo.name
-        ),
-        repo=repo
+        subject=f'Ansible Galaxy: {author} has released a new role',
+        db_message=f'New release from {author}: {repo.name}',
+        repo=repo,
     )
 
-    path = '/{}/{}/'.format(author, repo.name)
+
+    path = f'/{author}/{repo.name}/'
     ctx = {
         'author_name': author,
         'type': 'role',
@@ -327,25 +327,27 @@ def collection_new_survey(collection_pk):
     """Send new survey notification to collection namespace owners."""
     collection = models.Collection.objects.get(pk=collection_pk)
     owners = _get_preferences(collection.namespace.owners.all())
-    full_name = '{}.{}'.format(collection.namespace.name, collection.name)
+    full_name = f'{collection.namespace.name}.{collection.name}'
 
     notification = NotificationManger(
         email_template=new_survey_template,
         preferences_name='notify_survey',
         preferences_list=owners,
-        subject='Ansible Galaxy: new survey for {}'.format(full_name),
-        db_message='New survey for {}'.format(full_name),
+        subject=f'Ansible Galaxy: new survey for {full_name}',
+        db_message=f'New survey for {full_name}',
         collection=collection,
     )
 
-    path = '/{}/{}/'.format(collection.namespace.name, collection.name)
+
+    path = f'/{collection.namespace.name}/{collection.name}/'
 
     ctx = {
         'content_score': collection.community_score,
         'type': 'collection',
         'content_name': full_name,
-        'content_url': '{}{}'.format(notification.url, path),
+        'content_url': f'{notification.url}{path}',
     }
+
 
     notification.notify(ctx)
 
@@ -355,16 +357,17 @@ def repo_new_survey(repo_id):
     repo = models.Repository.objects.get(id=repo_id)
     author = repo.provider_namespace.namespace.name
     owners = _get_preferences(repo.provider_namespace.namespace.owners.all())
-    path = '/{}/{}/'.format(author, repo.name)
+    path = f'/{author}/{repo.name}/'
 
     notification = NotificationManger(
         email_template=new_survey_template,
         preferences_name='notify_survey',
         preferences_list=owners,
-        subject='Ansible Galaxy: new survey for {}'.format(repo.name),
-        db_message='New survey for {}'.format(repo.name),
-        repo=repo
+        subject=f'Ansible Galaxy: new survey for {repo.name}',
+        db_message=f'New survey for {repo.name}',
+        repo=repo,
     )
+
 
     ctx = {
         'content_score': repo.community_score,

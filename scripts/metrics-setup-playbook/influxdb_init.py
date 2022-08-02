@@ -24,8 +24,7 @@ client.switch_database(INFLUXDB_DB)
 #    % INFLUXDB_DB
 #)
 client.query(
-    "CREATE RETENTION POLICY a_year ON %s DURATION 365d REPLICATION 1 DEFAULT"
-    % INFLUXDB_DB
+    f"CREATE RETENTION POLICY a_year ON {INFLUXDB_DB} DURATION 365d REPLICATION 1 DEFAULT"
 )
 
 # Continuous queries

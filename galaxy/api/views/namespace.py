@@ -55,9 +55,8 @@ def check_basic(data, errors, instance=None):
     # information about their namespace (owners, description etc.) To fix this,
     # just skip checks if the name isn't being update and assume that whatever
     # is in the database is correct.
-    if name and instance:
-        if name == instance.name:
-            return
+    if name and instance and name == instance.name:
+        return
 
     if not name:
         errors['name'] = "Attribute 'name' is required"
@@ -77,7 +76,7 @@ def check_owners(data_owners):
 
     owners = []
     errors = {}
-    for i in range(0, len(data_owners)):
+    for i in range(len(data_owners)):
         owner = data_owners[i]
         if not isinstance(owner, dict):
             errors[i] = 'Invalid type. Expected dictionary'
@@ -97,10 +96,7 @@ def check_owners(data_owners):
 
 def can_update(namespace_id, user_id):
     namespace = models.Namespace.objects.get(pk=namespace_id)
-    if not namespace.owners.filter(pk=user_id):
-        return False
-
-    return True
+    return bool(namespace.owners.filter(pk=user_id))
 
 
 def check_providers(data_providers, parent=None):
@@ -109,7 +105,7 @@ def check_providers(data_providers, parent=None):
     if not isinstance(data_providers, list):
         return 'Invalid type. Expected list.'
 
-    for i in range(0, len(data_providers)):
+    for i in range(len(data_providers)):
         pns = data_providers[i]
         if not isinstance(pns, dict):
             errors[i] = 'Invalid type. Expected dictionary'
@@ -145,11 +141,19 @@ def check_providers(data_providers, parent=None):
 def update_provider_namespaces(namespace, provider_namespaces):
     # Update provider namespaces in the list
     for pns in provider_namespaces:
-        pns_attributes = {}
-        for item in ('display_name', 'avatar_url', 'location', 'company',
-                     'email', 'html_url', 'followers'):
-            if item in pns:
-                pns_attributes[item] = pns[item]
+        pns_attributes = {
+            item: pns[item]
+            for item in (
+                'display_name',
+                'avatar_url',
+                'location',
+                'company',
+                'email',
+                'html_url',
+                'followers',
+            )
+            if item in pns
+        }
 
         pns_attributes['description'] = (
             pns['description'] if pns.get('description') is not None else ''
@@ -169,20 +173,13 @@ def update_provider_namespaces(namespace, provider_namespaces):
                 )
                 pns['id'] = pns_obj.pk
             except Exception as exc:
-                raise APIException(
-                    'Error creating or updating provider namespaces: {}'
-                    .format(exc)
-                )
+                raise APIException(f'Error creating or updating provider namespaces: {exc}')
     # Disassociate provider namespaces not in the list
     for id in [
         obj.pk for obj
         in models.ProviderNamespace.objects.filter(namespace=namespace)
     ]:
-        found = False
-        for pns in provider_namespaces:
-            if pns['id'] == id:
-                found = True
-                break
+        found = any(pns['id'] == id for pns in provider_namespaces)
         if not found:
             # The provider namespace is no longer associated with
             # the Galaxy namespace
@@ -237,10 +234,8 @@ class NamespaceList(base_views.ListCreateAPIView):
                 errors['provider_namespaces'] = (
                     'A minimum of one provider namespace is required'
                 )
-            else:
-                provider_errors = check_providers(data['provider_namespaces'])
-                if provider_errors:
-                    errors['provider_namespaces'] = provider_errors
+            elif provider_errors := check_providers(data['provider_namespaces']):
+                errors['provider_namespaces'] = provider_errors
 
         if data.get('owners'):
             owner_errors, owners = check_owners(data['owners'])
@@ -299,10 +294,9 @@ class NamespaceDetail(base_views.RetrieveUpdateDestroyAPIView):
             check_basic(data, errors, instance=instance)
 
         if data.get('provider_namespaces'):
-            provider_errors = check_providers(
+            if provider_errors := check_providers(
                 data['provider_namespaces'], parent=instance
-            )
-            if provider_errors:
+            ):
                 errors['provider_namespaces'] = provider_errors
 
         if data.get('owners'):

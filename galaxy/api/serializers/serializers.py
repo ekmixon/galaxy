@@ -94,10 +94,9 @@ class BaseSerializer(serializers.ModelSerializer):
         ret = super().get_fields()
         for key, field in ret.items():
             if key == 'id' and not getattr(field, 'help_text', None):
-                field.help_text = u'Database ID for this {}.'.format(
-                    opts.verbose_name)
+                field.help_text = f'Database ID for this {opts.verbose_name}.'
             elif key == 'url':
-                field.help_text = u'URL for this {}.'.format(opts.verbose_name)
+                field.help_text = f'URL for this {opts.verbose_name}.'
                 field.type_label = 'string'
             elif key == 'related':
                 field.help_text = (
@@ -109,14 +108,10 @@ class BaseSerializer(serializers.ModelSerializer):
                     'for related resources.')
                 field.type_label = 'object'
             elif key == 'created':
-                field.help_text = (
-                    u'Timestamp when this {} was created.'.format(
-                        opts.verbose_name))
+                field.help_text = f'Timestamp when this {opts.verbose_name} was created.'
                 field.type_label = 'datetime'
             elif key == 'modified':
-                field.help_text = (
-                    u'Timestamp when this {} was last modified.'.format(
-                        opts.verbose_name))
+                field.help_text = f'Timestamp when this {opts.verbose_name} was last modified.'
                 field.type_label = 'datetime'
         return ret
 
@@ -140,17 +135,16 @@ class BaseSerializer(serializers.ModelSerializer):
     def get_summary_fields(self, obj):
         # Return values for certain fields on related objects, to simplify
         # displaying lists of items without additional API requests.
-        summary_fields = dict()
+        summary_fields = {}
         for fk, related_fields in SUMMARIZABLE_FK_FIELDS.items():
             try:
                 fkval = getattr(obj, fk, None)
                 if fkval is not None:
-                    summary_fields[fk] = dict()
+                    summary_fields[fk] = {}
                     for field in related_fields:
                         fval = getattr(fkval, field, None)
                         if fval is not None:
                             summary_fields[fk][field] = fval
-            # Can be raised by the reverse accessor for a OneToOneField.
             except ObjectDoesNotExist:
                 pass
         return summary_fields
@@ -332,8 +326,7 @@ class ImportTaskSerializer(BaseSerializer):
         )
 
     def to_native(self, obj):
-        ret = super().to_native(obj)
-        return ret
+        return super().to_native(obj)
 
     def get_url(self, obj):
         if obj is None:

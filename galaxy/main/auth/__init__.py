@@ -42,9 +42,14 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def get_login_redirect_url(self, request):
         if request.user.is_authenticated:
-            for account in request.user.socialaccount_set.all():
-                if account.provider == 'github':
-                    return self.default_login_redirect_url(request)
-            return '/accounts/connect'
+            return next(
+                (
+                    self.default_login_redirect_url(request)
+                    for account in request.user.socialaccount_set.all()
+                    if account.provider == 'github'
+                ),
+                '/accounts/connect',
+            )
+
         else:
             return self.default_login_redirect_url(request)

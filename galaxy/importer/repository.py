@@ -112,8 +112,7 @@ class RepositoryLoader(object):
     def _find_contents(self):
         try:
             finder = RoleFinder(self.path, self.log)
-            role = finder.find_contents()
-            return role
+            return finder.find_contents()
         except exc.ContentNotFound:
             pass
         raise exc.ContentNotFound(
@@ -132,7 +131,7 @@ class RepositoryLoader(object):
             content = loader.load()
             self.log.info(' ')
 
-            name = ': {}'.format(content.name) if content.name else ''
+            name = f': {content.name}' if content.name else ''
             self.log.info(f'===== LINTING {content_type.name}{name} =====')
             lint_result = loader.lint()
             content.scores = loader.score()
@@ -147,5 +146,4 @@ class RepositoryLoader(object):
             if content.scores:
                 repo_points += content.scores['quality']
                 count += 1
-        quality_score = None if count == 0 else repo_points / count
-        return quality_score
+        return None if count == 0 else repo_points / count

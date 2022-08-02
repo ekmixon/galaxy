@@ -68,10 +68,11 @@ class TestNoDuplicateNamespace(TestCase):
 
     def test_new_lowercase_namepace_created(self):
         auth_models.SocialAccount.objects.create(
-            provider='github', user=self.user, extra_data={
-                'avatar_url': '',
-                'login': NAME_MIXED + '2',
-            })
+            provider='github',
+            user=self.user,
+            extra_data={'avatar_url': '', 'login': f'{NAME_MIXED}2'},
+        )
+
 
         assert models.ProviderNamespace.objects.filter(
             name__iexact=NAME_MIXED).count() == 1
@@ -83,7 +84,7 @@ class TestNoDuplicateNamespace(TestCase):
         assert models.ProviderNamespace.objects.filter(
             name__icontains=NAME_MIXED).count() == 2
         assert self.user.namespaces.all().count() == 2
-        new_ns = models.Namespace.objects.get(name__iexact=NAME_MIXED + '2')
+        new_ns = models.Namespace.objects.get(name__iexact=f'{NAME_MIXED}2')
         assert new_ns.name.islower()
 
     def test_already_duplicate_ns_no_additional_ns(self):

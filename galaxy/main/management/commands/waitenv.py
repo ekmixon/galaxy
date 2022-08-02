@@ -18,7 +18,7 @@ def try_connect(host, port, timeout=5.0):
 
 
 def wait_for_connection(host, port, attempts=10):
-    logger.info('Waiting on {}:{}'.format(host, port))
+    logger.info(f'Waiting on {host}:{port}')
     while attempts > 0:
         try:
             return try_connect(host, port)
@@ -26,8 +26,7 @@ def wait_for_connection(host, port, attempts=10):
             pass
         time.sleep(6)
         attempts -= 1
-    logger.error('manage.py waitenv: Failed to connect to {}:{}'
-                 .format(host, port))
+    logger.error(f'manage.py waitenv: Failed to connect to {host}:{port}')
     raise IOError('Cannot connect to {0}:{1}'.format(host, port))
 
 
@@ -43,8 +42,7 @@ class Command(management.BaseCommand):
 
     def handle(self, *args, **options):
         logger.info('manage.py waitenv...')
-        services = options.pop('services')
-        if services:
+        if services := options.pop('services'):
             for srv in services:
                 try:
                     host, port = srv.split(':', 1)

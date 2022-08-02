@@ -53,21 +53,23 @@ class ModelAccessPermission(permissions.BasePermission):
             if not check_user_access(request.user, view.parent_model, 'read',
                                      parent_obj):
                 return False
-        if not obj:
-            return True
-        return check_user_access(request.user, view.model, 'read', obj)
+        return (
+            check_user_access(request.user, view.model, 'read', obj)
+            if obj
+            else True
+        )
 
     def check_post_permissions(self, request, view, obj=None):
         if hasattr(view, 'parent_model'):
             get_object_or_400(view.parent_model, pk=view.kwargs['pk'])
-            return True
         else:
             if obj:
                 return True
             if hasattr(view, 'model'):
                 return check_user_access(request.user, view.model,
                                          'add', request.data)
-            return True
+
+        return True
 
     def check_put_permissions(self, request, view, obj=None):
         if not obj:
@@ -86,11 +88,11 @@ class ModelAccessPermission(permissions.BasePermission):
         return self.check_put_permissions(request, view, obj)
 
     def check_delete_permissions(self, request, view, obj=None):
-        if not obj:
-            # FIXME: For some reason this needs to return True
-            # because it is first called with obj=None?
-            return True
-        return check_user_access(request.user, view.model, 'delete', obj)
+        return (
+            check_user_access(request.user, view.model, 'delete', obj)
+            if obj
+            else True
+        )
 
     def check_permissions(self, request, view, obj=None):
         """
@@ -119,12 +121,14 @@ class ModelAccessPermission(permissions.BasePermission):
         # Check permissions for the given view and object, based on the request
         # method used.
         check_method = getattr(
-            self, 'check_%s_permissions' % request.method.lower(), None)
-        result = check_method and check_method(request, view, obj)
-        if not result:
+            self, f'check_{request.method.lower()}_permissions', None
+        )
+
+        if result := check_method and check_method(request, view, obj):
+            return result
+        else:
             raise PermissionDenied("You do not have permission to "
                                    "perform this action.")
-        return result
 
     def has_permission(self, request, view, obj=None):
         return self.check_permissions(request, view, obj)

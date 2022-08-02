@@ -109,8 +109,7 @@ class RepositorySerializer(serializers.BaseSerializer):
             'id': instance.provider_namespace.provider.id,
         }
         namespace = {}
-        namespace_obj = instance.provider_namespace.namespace
-        if namespace_obj:
+        if namespace_obj := instance.provider_namespace.namespace:
             namespace = {
                 'id': namespace_obj.pk,
                 'name': namespace_obj.name,
@@ -143,14 +142,14 @@ class RepositorySerializer(serializers.BaseSerializer):
             for c in instance.content_counts
         }
 
-        versions = []
+        versions = [
+            {
+                'download_url': version.repository.get_download_url(version.tag),
+                'version': str(version.version),
+            }
+            for version in instance.all_versions()
+        ]
 
-        for version in instance.all_versions():
-            versions.append({
-                'download_url':
-                    version.repository.get_download_url(version.tag),
-                'version': str(version.version)
-            })
 
         return {
             'owners': owners,
@@ -173,14 +172,10 @@ class RepositorySerializer(serializers.BaseSerializer):
             instance.original_name)
 
     def get_readme(self, obj):
-        if obj.readme:
-            return obj.readme.raw
-        return None
+        return obj.readme.raw if obj.readme else None
 
     def get_readme_html(self, obj):
-        if obj.readme:
-            return obj.readme.html
-        return None
+        return obj.readme.html if obj.readme else None
 
     def get_download_url(self, obj):
         return obj.get_download_url()

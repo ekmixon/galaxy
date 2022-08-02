@@ -99,6 +99,5 @@ class PluginLoader(base.BaseLoader):
                 try:
                     self.documentation = ast_utils.parse_ast_doc(node)
                 except ValueError as e:
-                    self.log.warning('Cannot parse "DOCUMENTATION": {}'
-                                     .format(e))
+                    self.log.warning(f'Cannot parse "DOCUMENTATION": {e}')
                 break

@@ -43,47 +43,44 @@ class RoleList(ListAPIView):
     throttle_scope = 'download_count'
 
     def list(self, request, *args, **kwargs):
-        if request.query_params.get('owner__username'):
-            params = {}
-            for key, val in request.query_params.items():
-                if key == 'owner__username':
-                    params['namespace__name__iexact'] = val
-                elif key == 'name':
-                    params['name__iexact'] = val
-                elif key not in ('page', 'page_size'):
-                    params[key] = val
-            qs = self.get_queryset()
-            qs = qs.filter(**params)
-            page = self.paginate_queryset(qs)
+        if not request.query_params.get('owner__username'):
+            return super().list(self, request, *args, **kwargs)
+        params = {}
+        for key, val in request.query_params.items():
+            if key == 'owner__username':
+                params['namespace__name__iexact'] = val
+            elif key == 'name':
+                params['name__iexact'] = val
+            elif key not in ('page', 'page_size'):
+                params[key] = val
+        qs = self.get_queryset()
+        qs = qs.filter(**params)
+        page = self.paginate_queryset(qs)
 
-            if request.query_params.get('name'):
-                content = qs.first()
-                if content is not None:
-                    content.repository.download_count += 1
-                    content.repository.save()
+        if request.query_params.get('name'):
+            content = qs.first()
+            if content is not None:
+                content.repository.download_count += 1
+                content.repository.save()
 
-                    name = '{}.{}'.format(
-                        content.namespace.name,
-                        content.repository.name
-                    )
+                name = f'{content.namespace.name}.{content.repository.name}'
 
-                    data = {
-                        'measurement': 'content_download',
-                        'fields': {
-                            'content_name': name,
-                            'content_id': content.repository.id,
-                            'download_count': content.repository.download_count
-                        }
+                data = {
+                    'measurement': 'content_download',
+                    'fields': {
+                        'content_name': name,
+                        'content_id': content.repository.id,
+                        'download_count': content.repository.download_count
                     }
+                }
 
-                    serializers.influx_insert_internal(data)
+                serializers.influx_insert_internal(data)
 
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(qs, many=True)
-            return Response(serializer.data)
-        return super().list(self, request, *args, **kwargs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     def get_queryset(self):
         qs = super().get_queryset()

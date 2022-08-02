@@ -139,9 +139,9 @@ def get_raw_commit_info(commit_id='HEAD', directory=None, date_format=None):
     """
     log_format = '%x1f'.join(v[1] for v in _LOG_FORMAT)
 
-    cmd = ['git', 'log', '-1', '--format=' + log_format]
+    cmd = ['git', 'log', '-1', f'--format={log_format}']
     if date_format:
-        cmd.append('--date=' + date_format)
+        cmd.append(f'--date={date_format}')
     cmd.append(commit_id)
 
     # TODO(cutwater): Replace `.decode('utf-8')` call with subprocess

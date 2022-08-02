@@ -14,8 +14,7 @@ def create_galaxy_repository(apps, schema_editor):
 def delete_galaxy_repository(apps, schema_editor):
     db_alias = schema_editor.connection.alias
     Repository = apps.get_model("pulp_app", "Repository")
-    obj = Repository.objects.using(db_alias).filter(name="galaxy").first()
-    if obj:
+    if obj := Repository.objects.using(db_alias).filter(name="galaxy").first():
         obj.delete()
 
 

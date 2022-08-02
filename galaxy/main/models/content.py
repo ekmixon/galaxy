@@ -199,7 +199,7 @@ class Content(CommonModelNameNotUnique):
     # -------------------------------------------------------------------------
 
     def __str__(self):
-        return "{}.{}".format(self.namespace.name, self.name)
+        return f"{self.namespace.name}.{self.name}"
 
     @property
     def github_user(self):
@@ -229,7 +229,7 @@ class Content(CommonModelNameNotUnique):
             return model_to_dict(self.repository.import_tasks.latest(),
                                  fields=('id', 'state'))
         except Exception:
-            return dict()
+            return {}
 
     def get_unique_platforms(self):
         return [platform.name for platform in
@@ -354,7 +354,7 @@ class Platform(CommonModelNameNotUnique):
     )
 
     def __str__(self):
-        return "{}-{}".format(self.name, self.release)
+        return f"{self.name}-{self.release}"
 
     def get_absolute_url(self):
         return reverse('api:platform_detail', args=(self.pk,))

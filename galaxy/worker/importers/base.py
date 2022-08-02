@@ -52,16 +52,8 @@ class ContentImporter(object):
         repo = self.ctx.repository
         ns = repo.provider_namespace.namespace
 
-        # Name is the content name, which in the case of multi content repos
-        # might not be the same as the repository name
-        name = repo.name
-        original_name = repo.original_name
-
-        if self.data.name:
-            name = self.data.name
-        if self.data.original_name:
-            original_name = self.data.original_name
-
+        name = self.data.name or repo.name
+        original_name = self.data.original_name or repo.original_name
         # Check name
         if not re.match(r'^[a-zA-Z0-9_-]+$', name):
             raise exc.LegacyTaskError(
@@ -113,5 +105,6 @@ class ContentImporter(object):
         content.save()
 
     def _log_create_content(self):
-        self.log.info('===== IMPORTING {}: {} ====='.format(
-                      self.data.content_type.name, self.data.name))
+        self.log.info(
+            f'===== IMPORTING {self.data.content_type.name}: {self.data.name} ====='
+        )

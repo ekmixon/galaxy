@@ -67,9 +67,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
 
     def get_fieldsets(self, request, obj=None):
-        if not obj:
-            return self.add_fieldsets
-        return super().get_fieldsets(request, obj)
+        return super().get_fieldsets(request, obj) if obj else self.add_fieldsets
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -77,11 +75,12 @@ class CustomUserAdmin(admin.ModelAdmin):
         """
         defaults = {}
         if obj is None:
-            defaults.update({
+            defaults |= {
                 'form': self.add_form,
                 'fields': admin.utils.flatten_fieldsets(self.add_fieldsets),
-            })
-        defaults.update(kwargs)
+            }
+
+        defaults |= kwargs
         return super().get_form(request, obj, **defaults)
 
     def get_urls(self):

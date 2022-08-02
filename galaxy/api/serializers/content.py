@@ -206,11 +206,7 @@ class ContentDetailSerializer(ContentSerializer):
         return result
 
     def get_readme(self, obj):
-        if obj.readme:
-            return obj.readme.raw
-        return None
+        return obj.readme.raw if obj.readme else None
 
     def get_readme_html(self, obj):
-        if obj.readme:
-            return obj.readme.html
-        return None
+        return obj.readme.html if obj.readme else None

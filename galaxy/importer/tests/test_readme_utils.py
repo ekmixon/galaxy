@@ -53,7 +53,7 @@ def test_render_simple():
     assert html == ''
 
     html = call_render(TEXT_SIMPLE, 'text/markdown')
-    assert html == '<p>{}</p>'.format(TEXT_SIMPLE)
+    assert html == f'<p>{TEXT_SIMPLE}</p>'
 
 
 def test_render_bad_tag():

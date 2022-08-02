@@ -76,9 +76,7 @@ class NotificationSecretList(base_views.ListCreateAPIView):
             })
 
         if source == 'travis':
-            secret = sha256(
-                github_user + '/' + github_repo + secret
-            ).hexdigest()
+            secret = sha256(f'{github_user}/{github_repo}{secret}').hexdigest()
 
         secret, create = models.NotificationSecret.objects.get_or_create(
             source=source,
@@ -136,9 +134,7 @@ class NotificationSecretDetail(base_views.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
 
         if source == 'travis':
-            secret = sha256(
-                github_user + '/' + github_repo + secret
-            ).hexdigest()
+            secret = sha256(f'{github_user}/{github_repo}{secret}').hexdigest()
 
         try:
             instance.source = source
@@ -176,12 +172,11 @@ class NotificationList(base_views.ListCreateAPIView):
         request_branch = payload['branch']
 
         author_branch = request.query_params.get('branch', None)
-        is_author_prevent_import = (
-            author_branch and
-            author_branch != request_branch and
-            not payload.get('tag')
-        )
-        if is_author_prevent_import:
+        if is_author_prevent_import := (
+            author_branch
+            and author_branch != request_branch
+            and not payload.get('tag')
+        ):
             msg = ('Travis request_branch does not match branch author set '
                    'in .travis.yml notification webhook url. '
                    'Will not import.')
@@ -198,19 +193,14 @@ class NotificationList(base_views.ListCreateAPIView):
             branch=request_branch
         )
         committed_at = payload.get('committed_at')
-        if committed_at:
-            committed_at = parse_datetime(committed_at)
-        else:
-            committed_at = timezone.now()
-
+        committed_at = parse_datetime(committed_at) if committed_at else timezone.now()
         try:
             provider_ns = models.ProviderNamespace.objects.get(
                 provider__name=constants.PROVIDER_GITHUB,
                 name__iexact=github_user,
             )
         except models.ProviderNamespace.DoesNotExist:
-            raise ValidationError('Prodiver namespace "{}" not found'
-                                  .format(github_user))
+            raise ValidationError(f'Prodiver namespace "{github_user}" not found')
 
         notification = models.Notification(
             owner=owner,
@@ -234,12 +224,11 @@ class NotificationList(base_views.ListCreateAPIView):
             })
         notification.repository = repository
 
-        is_branch_mismatch = (
-            request_branch != repository.import_branch and
-            repository.import_branch and  # repo is not new
-            not payload.get('tag')  # not a tag push
-        )
-        if is_branch_mismatch:
+        if is_branch_mismatch := (
+            request_branch != repository.import_branch
+            and repository.import_branch
+            and not payload.get('tag')  # repo is not new  # not a tag push
+        ):
             msg = ('Travis request_branch does not match repo import_branch. '
                    'Will not import.')
             logger.info(msg)
@@ -272,10 +261,10 @@ class NotificationList(base_views.ListCreateAPIView):
     def _get_repo_info(self, request):
         """Return github username and repository from request headers."""
 
-        slug = request.META.get('HTTP_TRAVIS_REPO_SLUG')
-        if not slug:
+        if slug := request.META.get('HTTP_TRAVIS_REPO_SLUG'):
+            return slug.split('/', 1)
+        else:
             raise ValidationError('Expected "TRAVIS_REPO_SLUG" header')
-        return slug.split('/', 1)
 
     def _get_signature(self, request):
         """

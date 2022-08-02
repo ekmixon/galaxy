@@ -35,9 +35,9 @@ class BaseModel(models.Model, DirtyMixin):
 
     def __str__(self):
         if hasattr(self, 'name'):
-            return '{}-{}'.format(self.name, self.id)
+            return f'{self.name}-{self.id}'
         else:
-            return '{}-{}'.format(self._meta.verbose_name, self.id)
+            return f'{self._meta.verbose_name}-{self.id}'
 
 
 class PrimordialModel(BaseModel):

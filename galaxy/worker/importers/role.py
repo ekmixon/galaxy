@@ -38,7 +38,7 @@ class RoleImporter(base.ContentImporter):
         content.license = role_meta['license']
         content.min_ansible_version = role_meta['min_ansible_version']
         content.min_ansible_container_version = \
-            role_meta['min_ansible_container_version']
+                role_meta['min_ansible_container_version']
         content.github_branch = role_meta['github_branch']
         content.github_default_branch = gh_repo.default_branch
         content.role_type = role_meta['role_type']

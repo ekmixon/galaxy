@@ -36,21 +36,15 @@ class VersionField(models.CharField):
         super().__init__(*args, **kwargs)
 
     def from_db_value(self, value, expression, connection):
-        if value is None:
-            return value
-        return semantic_version.Version(value)
+        return value if value is None else semantic_version.Version(value)
 
     def to_python(self, value):
         if isinstance(value, semantic_version.Version):
             return value
-        if value is None:
-            return value
-        return semantic_version.Version(value)
+        return value if value is None else semantic_version.Version(value)
 
     def get_prep_value(self, value):
-        if value is None:
-            return value
-        return str(value)
+        return value if value is None else str(value)
 
 
 # TODO(cutwater): LooseVersionField is not used in actual models and is kept
@@ -80,5 +74,5 @@ class TruncatingCharField(models.CharField):
     def get_prep_value(self, value):
         value = super().get_prep_value(value)
         if value and len(value) > self.max_length:
-            return value[:self.max_length - 3] + '...'
+            return f'{value[:self.max_length - 3]}...'
         return value

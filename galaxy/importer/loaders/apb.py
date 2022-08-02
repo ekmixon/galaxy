@@ -119,8 +119,7 @@ class APBMetaParser(object):
                               'parameters')
         expected_plan_meta_keys = ('displayName', 'longDescription', 'cost')
         expected_parameter_keys = ('name', 'title', 'type', 'required')
-        idx = 0
-        for plan in plans:
+        for idx, plan in enumerate(plans):
             if not isinstance(plan, dict):
                 raise exc.APBContentLoadError(
                     'Expecting "plans" in metadata to be a list of '
@@ -142,8 +141,7 @@ class APBMetaParser(object):
                     raise exc.APBContentLoadError(
                         'Expecting "parameters" in "plans[{0}]" '
                         'of metadata to be a list'.format(idx))
-                pidx = 0
-                for params in plan['parameters']:
+                for pidx, params in enumerate(plan['parameters']):
                     if not isinstance(params, dict):
                         raise exc.APBContentLoadError(
                             'Expecting "parameters[{0}]" in "plans[{1}]" of '
@@ -159,9 +157,6 @@ class APBMetaParser(object):
                             self.metadata[fieldname][idx]['parameters'][pidx][
                                 new_key] = self.metadata[fieldname][idx][
                                     'parameters'][pidx].pop(param_key)
-
-                    pidx += 1
-            idx += 1
 
     def _check_async(self):
         fieldname = 'async'

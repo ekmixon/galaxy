@@ -74,7 +74,7 @@ class APIView(views.APIView):
         template_list = []
         for klass in inspect.getmro(type(self)):
             template_basename = camelcase_to_underscore(klass.__name__)
-            template_list.append('main/%s.md' % template_basename)
+            template_list.append(f'main/{template_basename}.md')
         context = self.get_description_context()
         return render_to_string(template_list, context)
 
@@ -88,8 +88,7 @@ class GenericAPIView(generics.GenericAPIView, APIView):
     """
 
     def get_queryset(self):
-        qs = self.model.objects.all().distinct()
-        return qs
+        return self.model.objects.all().distinct()
 
     def get_description_context(self):
         # Set instance attributes needed to get serializer metadata.
@@ -169,12 +168,20 @@ class ListAPIView(generics.ListAPIView, GenericAPIView):
 
     @property
     def search_fields(self):
-        fields = []
-        for field in self.model._meta.fields:
-            if field.name in ('username', 'first_name', 'last_name', 'email',
-                              'name', 'description', 'email'):
-                fields.append(field.name)
-        return fields
+        return [
+            field.name
+            for field in self.model._meta.fields
+            if field.name
+            in (
+                'username',
+                'first_name',
+                'last_name',
+                'email',
+                'name',
+                'description',
+                'email',
+            )
+        ]
 
     def make_response(self, queryset):
         page = self.paginate_queryset(queryset)
@@ -226,7 +233,7 @@ class SubListAPIView(ListAPIView):
     def check_parent_access(self, parent=None):
         parent = parent or self.get_parent_object()
         parent_access = getattr(self, 'parent_access', 'read')
-        if parent_access in ('read', 'delete'):
+        if parent_access in {'read', 'delete'}:
             args = (parent_access, parent)
         else:
             args = (parent_access, parent, None)

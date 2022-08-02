@@ -229,7 +229,7 @@ class TestPlatformModel(TestCase):
             release=self.VALID_RELEASE
         )
 
-        assert str(platform) == self.VALID_NAME + "-" + self.VALID_RELEASE
+        assert str(platform) == f"{self.VALID_NAME}-{self.VALID_RELEASE}"
 
     @pytest.mark.model_methods
     def test_repr(self):

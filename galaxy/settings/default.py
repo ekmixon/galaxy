@@ -323,7 +323,7 @@ SITE_NAME = 'localhost'
 WAIT_FOR = []
 
 ADMIN_URL_PATH = 'admin'
-ADMIN_URL_PATTERN = r'^{}/'.format(ADMIN_URL_PATH)
+ADMIN_URL_PATTERN = f'^{ADMIN_URL_PATH}/'
 
 ROLE_TYPES_ENABLED = frozenset(['ANS', 'CON', 'APP'])
 

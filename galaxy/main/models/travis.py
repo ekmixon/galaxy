@@ -36,10 +36,10 @@ class NotificationSecret(PrimordialModel):
     )
 
     def __str__(self):
-        return "{}-{}".format(self.owner.username, self.source)
+        return f"{self.owner.username}-{self.source}"
 
     def repo_full_name(self):
-        return "{}/{}".format(self.github_user, self.github_repo)
+        return f"{self.github_user}/{self.github_repo}"
 
 
 class Notification(PrimordialModel):

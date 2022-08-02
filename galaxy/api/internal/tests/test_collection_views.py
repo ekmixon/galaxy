@@ -120,14 +120,11 @@ class TestCollectionView(APITestCase):
     def test_deprecate_collection(self):
         self.client.force_authenticate(user=self.owner)
         resp = self.client.put(
-            "/api/internal/ui/collections/{}/".format(self.collection.id),
-            {
-                'id': 89123,
-                'name': 'blahBlah',
-                'deprecated': True
-            },
-            format='json'
+            f"/api/internal/ui/collections/{self.collection.id}/",
+            {'id': 89123, 'name': 'blahBlah', 'deprecated': True},
+            format='json',
         )
+
         data = resp.json()
 
         # Test deprecation. Verify it is the only writeable field.
@@ -140,12 +137,11 @@ class TestCollectionView(APITestCase):
         assert collection.deprecated is True
 
         resp = self.client.put(
-            "/api/internal/ui/collections/{}/".format(self.collection.id),
-            {
-                'deprecated': False
-            },
-            format='json'
+            f"/api/internal/ui/collections/{self.collection.id}/",
+            {'deprecated': False},
+            format='json',
         )
+
 
         # Test undeprecating a collection
         assert resp.json()['deprecated'] is False
@@ -154,19 +150,20 @@ class TestCollectionView(APITestCase):
 
         # Verify that delete isn't enabled
         resp = self.client.delete(
-            "/api/internal/ui/collections/{}/".format(self.collection.id))
+            f"/api/internal/ui/collections/{self.collection.id}/"
+        )
+
 
         assert resp.status_code == http_codes.HTTP_405_METHOD_NOT_ALLOWED
         assert models.Collection.objects.filter(pk=self.collection.id).exists()
 
     def test_malicious_deprecate_collection(self):
         resp = self.client.put(
-            "/api/internal/ui/collections/{}/".format(self.collection.id),
-            {
-                'deprecated': True
-            },
-            format='json'
+            f"/api/internal/ui/collections/{self.collection.id}/",
+            {'deprecated': True},
+            format='json',
         )
+
 
         # Test unauthenticated users.
         assert resp.json()['code'] == 'permission_denied'
@@ -176,12 +173,11 @@ class TestCollectionView(APITestCase):
 
         self.client.force_authenticate(user=self.imposter)
         resp = self.client.put(
-            "/api/internal/ui/collections/{}/".format(self.collection.id),
-            {
-                'deprecated': True
-            },
-            format='json'
+            f"/api/internal/ui/collections/{self.collection.id}/",
+            {'deprecated': True},
+            format='json',
         )
+
 
         # Test authenticated users that aren't owners
         assert resp.json()['code'] == 'permission_denied'

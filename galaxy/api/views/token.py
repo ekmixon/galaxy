@@ -84,10 +84,8 @@ class TokenView(base_views.APIView):
             })
 
         try:
-            header = dict(Authorization='token ' + github_token)
-            gh_user = requests.get(
-                settings.GITHUB_SERVER + '/user', headers=header
-            )
+            header = dict(Authorization=f'token {github_token}')
+            gh_user = requests.get(f'{settings.GITHUB_SERVER}/user', headers=header)
             gh_user.raise_for_status()
             gh_user = gh_user.json()
             if hasattr(gh_user, 'message'):

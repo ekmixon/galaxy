@@ -335,14 +335,13 @@ class ImportTaskList(base_views.ListCreateAPIView):
     )
 
     def get_queryset(self):
-        qs = models.ImportTask.objects.select_related(
+        return models.ImportTask.objects.select_related(
             'owner',
             'repository',
             'repository__provider_namespace',
             'repository__provider_namespace__provider',
             'repository__provider_namespace__namespace',
         )
-        return qs
 
     def get_serializer_class(self):
         # NOTE(cutwater): This is for compatibility with ansible-galaxy client.
@@ -390,7 +389,7 @@ class ImportTaskList(base_views.ListCreateAPIView):
                 name=github_user
             )
             if not request.user.is_staff and \
-               not namespace.namespace.owners.filter(
+                   not namespace.namespace.owners.filter(
                    username=request.user.get_username()):
                 # User is not an onwer of the Namespace
                 raise PermissionDenied(
@@ -423,7 +422,7 @@ class ImportTaskList(base_views.ListCreateAPIView):
                 })
 
             if not request.user.is_staff and \
-               not repository.provider_namespace.namespace.owners.filter(
+                   not repository.provider_namespace.namespace.owners.filter(
                    username=request.user.get_username()):
                 # User is not an onwer of the Namespace
                 raise PermissionDenied(
@@ -510,40 +509,30 @@ class SubscriptionList(base_views.ListCreateAPIView):
                 account__provider='github'
             )
         except Exception:
-            msg = (
-                "Failed to connect to GitHub account for Galaxy user {}. "
-                "You must first authenticate with Github."
-                .format(request.user.username)
-            )
+            msg = f"Failed to connect to GitHub account for Galaxy user {request.user.username}. You must first authenticate with Github."
+
             raise ValidationError(dict(detail=msg))
 
         gh_api = Github(token.token)
 
         try:
-            gh_repo = gh_api.get_repo(github_user + '/' + github_repo)
+            gh_repo = gh_api.get_repo(f'{github_user}/{github_repo}')
         except GithubException as e:
-            msg = (
-                "GitHub API failed to return repo for {}/{}. {} - {}"
-                .format(github_user, github_repo, e.data, e.status)
-            )
+            msg = f"GitHub API failed to return repo for {github_user}/{github_repo}. {e.data} - {e.status}"
+
             raise ValidationError(dict(detail=msg))
 
         try:
             gh_user = gh_api.get_user()
         except GithubException as e:
-            msg = (
-                "GitHub API failed to return authorized user. {} - {}"
-                .format(e.data, e.status)
-            )
+            msg = f"GitHub API failed to return authorized user. {e.data} - {e.status}"
             raise ValidationError(dict(detail=msg))
 
         try:
             gh_user.add_to_subscriptions(gh_repo)
         except GithubException:
-            msg = (
-                "GitHub API failed to subscribe user {} to for {}/{}"
-                .format(request.user.username, github_user, github_repo)
-            )
+            msg = f"GitHub API failed to subscribe user {request.user.username} to for {github_user}/{github_repo}"
+
             raise ValidationError(dict(detail=msg))
 
         new_sub, created = models.Subscription.objects.get_or_create(
@@ -556,10 +545,7 @@ class SubscriptionList(base_views.ListCreateAPIView):
                 'github_repo': github_repo
             })
 
-        sub_count = 0
-        for s in gh_repo.get_subscribers():
-            sub_count += 1   # only way to get subscriber count via pygithub
-
+        sub_count = sum(1 for _ in gh_repo.get_subscribers())
         repo = models.Repository.objects.get(github_user=github_user,
                                              github_repo=github_repo)
         repo.watchers_count = sub_count
@@ -587,58 +573,42 @@ class SubscriptionDetail(base_views.RetrieveUpdateDestroyAPIView):
                 account__user=request.user, account__provider='github'
             )
         except Exception:
-            msg = (
-                "Failed to access GitHub account for Galaxy user {}. "
-                "You must first authenticate with GitHub."
-                .format(request.user.username)
-            )
+            msg = f"Failed to access GitHub account for Galaxy user {request.user.username}. You must first authenticate with GitHub."
+
             raise ValidationError(dict(detail=msg))
 
         gh_api = Github(token.token)
 
         try:
-            gh_repo = gh_api.get_repo(obj.github_user + '/' + obj.github_repo)
+            gh_repo = gh_api.get_repo(f'{obj.github_user}/{obj.github_repo}')
         except GithubException as e:
-            msg = (
-                "GitHub API failed to return repo for {}/{}. {} - {}"
-                .format(obj.github_user, obj.github_repo, e.data, e.status)
-            )
+            msg = f"GitHub API failed to return repo for {obj.github_user}/{obj.github_repo}. {e.data} - {e.status}"
+
             raise ValidationError(dict(detail=msg))
 
         try:
             gh_user = gh_api.get_user()
         except GithubException as e:
-            msg = (
-                "GitHub API failed to return authorized user. {} - {}"
-                .format(e.data, e.status)
-            )
+            msg = f"GitHub API failed to return authorized user. {e.data} - {e.status}"
             raise ValidationError(dict(detail=msg))
 
         try:
             gh_user.remove_from_subscriptions(gh_repo)
         except GithubException as e:
-            msg = (
-                "GitHub API failed to unsubscribe {} from {}/{}. {} - {}"
-                .format(request.user.username, obj.github_user,
-                        obj.github_repo, e.data, e.status)
-            )
+            msg = f"GitHub API failed to unsubscribe {request.user.username} from {obj.github_user}/{obj.github_repo}. {e.data} - {e.status}"
+
             raise ValidationError(dict(detail=msg))
 
         obj.delete()
 
-        sub_count = 0
-        for sub in gh_repo.get_subscribers():
-            sub_count += 1   # only way to get subscriber count via pygithub
-
+        sub_count = sum(1 for _ in gh_repo.get_subscribers())
         repo = models.Repository.objects.get(github_user=obj.github_user,
                                              github_repo=obj.github_repo)
         repo.watchers_count = sub_count
         repo.save()
 
-        result = (
-            "unsubscribed {} from {}/{}."
-            .format(request.user.username, obj.github_user, obj.github_repo)
-        )
+        result = f"unsubscribed {request.user.username} from {obj.github_user}/{obj.github_repo}."
+
 
         return Response(dict(detail=result), status=status.HTTP_202_ACCEPTED)
 
@@ -680,11 +650,8 @@ class RemoveRole(base_views.APIView):
                     account__user=request.user, account__provider='github'
                 )
             except Exception:
-                msg = (
-                    "Failed to get Github account for Galaxy user {}. "
-                    "You must first authenticate with Github."
-                    .format(request.user.username)
-                )
+                msg = f"Failed to get Github account for Galaxy user {request.user.username}. You must first authenticate with Github."
+
                 raise ValidationError({'detail': msg})
 
             gh_api = Github(token.token)
@@ -697,7 +664,7 @@ class RemoveRole(base_views.APIView):
                 )
 
             allowed = False
-            repo_full_name = "{}/{}".format(gh_user, gh_repo)
+            repo_full_name = f"{gh_user}/{gh_repo}"
             for r in ghu.get_repos():
                 if r.full_name == repo_full_name:
                     allowed = True
@@ -721,13 +688,13 @@ class RemoveRole(base_views.APIView):
             repository__original_name=gh_repo)
         cnt = len(roles)
         if cnt == 0:
-            response['status'] = (
-                "Role {}.{} not found. Maybe it was deleted previously?"
-                .format(gh_user, gh_repo)
-            )
+            response[
+                'status'
+            ] = f"Role {gh_user}.{gh_repo} not found. Maybe it was deleted previously?"
+
             return Response(response)
         elif cnt == 1:
-            response['status'] = "Role {}.{} deleted".format(gh_user, gh_repo)
+            response['status'] = f"Role {gh_user}.{gh_repo} deleted"
         else:
             response['status'] = (
                 "Deleted {:d} roles associated with {}/{}"
@@ -770,11 +737,8 @@ class RefreshUserRepos(base_views.APIView):
                 account__user=request.user, account__provider='github'
             )
         except Exception:
-            msg = (
-                "Failed to connect to GitHub account for Galaxy user {} "
-                "You must first authenticate with GitHub."
-                .format(request.user.username)
-            )
+            msg = f"Failed to connect to GitHub account for Galaxy user {request.user.username} You must first authenticate with GitHub."
+
             logger.error(msg)
             return HttpResponseBadRequest({'detail': msg})
 

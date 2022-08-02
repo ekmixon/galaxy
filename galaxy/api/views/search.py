@@ -269,18 +269,14 @@ class ContentSearchView(base.ListAPIView):
     def add_vendor_filter(queryset, is_vendor):
         if is_vendor is None:
             return queryset
-        is_vendor_value = False
-        if is_vendor.lower() in ('true', 'yes', '1'):
-            is_vendor_value = True
+        is_vendor_value = is_vendor.lower() in ('true', 'yes', '1')
         return queryset.filter(namespace__is_vendor=is_vendor_value)
 
     @staticmethod
     def add_deprecated_filter(queryset, is_deprecated):
         if is_deprecated is None:
             return queryset
-        is_deprecated_value = False
-        if is_deprecated.lower() in ('true', 'yes', '1'):
-            is_deprecated_value = True
+        is_deprecated_value = is_deprecated.lower() in ('true', 'yes', '1')
         return queryset.filter(repository__deprecated=is_deprecated_value)
 
 

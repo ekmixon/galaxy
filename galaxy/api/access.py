@@ -49,7 +49,7 @@ def check_user_access(user, model_class, action, *args, **kwargs):
     """
     for access_class in access_registry.get(model_class, []):
         access_instance = access_class(user)
-        access_method = getattr(access_instance, 'can_%s' % action, None)
+        access_method = getattr(access_instance, f'can_{action}', None)
         if not access_method:
             continue
         result = access_method(*args, **kwargs)
@@ -90,9 +90,7 @@ class BaseAccess(object):
     def can_read(self, obj):
         if obj:
             if hasattr(obj, "active") and obj.active:
-                if hasattr(obj, "is_valid") and not obj.is_valid:
-                    return False
-                return True
+                return bool(not hasattr(obj, "is_valid") or obj.is_valid)
             elif hasattr(obj, "is_active") and obj.is_active:
                 return True
             else:
@@ -153,10 +151,7 @@ class UserAccess(BaseAccess):
         return bool(self.user == obj or self.user.is_staff)
 
     def can_delete(self, obj):
-        if obj == self.user:
-            # cannot delete yourself
-            return False
-        return self.user.is_staff
+        return False if obj == self.user else self.user.is_staff
 
 
 class RoleAccess(BaseAccess):
@@ -182,19 +177,25 @@ class NotificationSecretAccess(BaseAccess):
     model = models.NotificationSecret
 
     def can_read(self, obj):
-        if (self.user.is_authenticated and obj.active
-                and obj.owner.id == self.user.id):
-            return True
-        return False
+        return bool(
+            (
+                self.user.is_authenticated
+                and obj.active
+                and obj.owner.id == self.user.id
+            )
+        )
 
     def can_add(self, data):
         return self.user.is_authenticated
 
     def can_change(self, obj, data):
-        if (self.user.is_authenticated and obj.active
-                and obj.owner.id == self.user.id):
-            return True
-        return False
+        return bool(
+            (
+                self.user.is_authenticated
+                and obj.active
+                and obj.owner.id == self.user.id
+            )
+        )
 
     def can_delete(self, obj):
         if (self.user.is_authenticated and obj.active
@@ -330,11 +331,11 @@ class UserTokenAccess(BaseAccess):
     model = Token
 
     def can_read(self, obj):
-        if not self.user.is_authenticated:
-            return False
-        if self.user.is_staff or self.user.pk == obj.user.pk:
-            return True
-        return False
+        return (
+            bool(self.user.is_staff or self.user.pk == obj.user.pk)
+            if self.user.is_authenticated
+            else False
+        )
 
     def can_add(self):
         return False
@@ -386,16 +387,10 @@ class EmailAddressAccess(BaseAccess):
         return False
 
     def can_add(self, data):
-        if self.user.is_authenticated:
-            if self.user.id == data.get('user'):
-                return True
-        return False
+        return bool(self.user.is_authenticated and self.user.id == data.get('user'))
 
     def can_change(self, obj, data):
-        if self.user.is_authenticated:
-            if self.user == obj.user:
-                return True
-        return False
+        return bool(self.user.is_authenticated and self.user == obj.user)
 
     def can_delete(self, obj):
         if self.user.is_authenticated:
@@ -456,14 +451,10 @@ class UserPreferencesAccess(BaseAccess):
         return False
 
     def can_change(self, obj, data):
-        if not self.user.is_authenticated:
-            return False
-        return self.user == obj.user
+        return self.user == obj.user if self.user.is_authenticated else False
 
     def can_read(self, obj):
-        if not self.user.is_authenticated:
-            return False
-        return self.user == obj.user
+        return self.user == obj.user if self.user.is_authenticated else False
 
     def can_delete(self, obj):
         return False

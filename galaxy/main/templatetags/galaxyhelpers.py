@@ -65,12 +65,9 @@ def timesince(value):
 @stringfilter
 def urlname(value):
     parts = value.split('/')
-    paths = []
-    for part in parts:
-        if not part == '':
-            paths.append(part)
+    paths = [part for part in parts if part != '']
     if len(paths) > 1:
-        return check_title("%s %s" % (paths[-2].title(), paths[-1].title()))
+        return check_title(f"{paths[-2].title()} {paths[-1].title()}")
     elif len(paths) > 0:
         return check_title(paths[-1].title())
     else:

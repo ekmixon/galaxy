@@ -154,11 +154,11 @@ class RoleMetaParser(object):
         return dependencies
 
     def _validate_tag(self, tag):
-        if not isinstance(tag, str):
-            return False
-        if not re.match(constants.ROLE_TAG_REGEXP, tag):
-            return False
-        return True
+        return (
+            bool(re.match(constants.ROLE_TAG_REGEXP, tag))
+            if isinstance(tag, str)
+            else False
+        )
 
     def set_tox(self, tox_data):
         self.tox_data = tox_data
@@ -177,9 +177,10 @@ class RoleMetaParser(object):
         if isinstance(galaxy_tags, list):
             tags += galaxy_tags
 
-        if 'categories' in self.metadata:
-            if isinstance(self.metadata['categories'], list):
-                tags += self.metadata['categories']
+        if 'categories' in self.metadata and isinstance(
+            self.metadata['categories'], list
+        ):
+            tags += self.metadata['categories']
 
         tags = list(filter(self._validate_tag, tags))
 
@@ -194,7 +195,7 @@ class RoleMetaParser(object):
                 'Expected "platforms" in metadata to be a list.')
 
         platforms = []
-        for idx, platform in enumerate(meta_platforms):
+        for platform in meta_platforms:
             name = platform.get('name', None)
             if not name:
                 continue
@@ -239,8 +240,7 @@ class RoleMetaParser(object):
             if set(video) != {'url', 'title'}:
                 continue
             for name, expr in self.VIDEO_REGEXP.items():
-                match = expr.match(video['url'])
-                if match:
+                if match := expr.match(video['url']):
                     file_id = match.group(1)
                     embed_url = self.VIDEO_EMBED_URLS[name].format(file_id)
                     videos.append(models.VideoLink(embed_url, video['title']))
@@ -339,14 +339,11 @@ class RoleLoader(base.BaseLoader):
         }
 
     def make_name(self):
-        if self.rel_path:
-            return os.path.basename(self.path)
-        else:
-            return None
+        return os.path.basename(self.path) if self.rel_path else None
 
     def _on_lint_issue(self, linter_type, rule_id, rule_desc, message=None):
         lint_record = lintutils.LintRecord(linter_type, rule_id, rule_desc)
-        rule_code = '{}_{}'.format(linter_type, rule_id).lower()
+        rule_code = f'{linter_type}_{rule_id}'.lower()
         rule_info = lookup_lint_rule(rule_code)
 
         if rule_info is not None:
@@ -357,8 +354,7 @@ class RoleLoader(base.BaseLoader):
                 self._score_stats.get(lint_record.score_type, 0.0)
                 + SEVERITY_TO_WEIGHT[lint_record.severity])
         else:
-            self.log.warning(
-                'Severity not found for rule: {}'.format(rule_code))
+            self.log.warning(f'Severity not found for rule: {rule_code}')
         self.log.warning(message or rule_desc,
                          extra={'lint_record': lint_record})
 
@@ -414,8 +410,7 @@ class RoleLoader(base.BaseLoader):
             config = configparser.ConfigParser()
             config.read_file(fp)
             if 'testenv' in config:
-                tox_data = dict(config['testenv'])
-                return tox_data
+                return dict(config['testenv'])
         return None
 
     def _load_container_yml(self):
@@ -473,11 +468,10 @@ class RoleLoader(base.BaseLoader):
                     name__iexact=name
                 )
                 if not platform_objs:
-                    msg = u'Invalid platform: "{}-all", skipping.'.format(name)
+                    msg = f'Invalid platform: "{name}-all", skipping.'
                     self._on_lint_issue('importer', 'IMPORTER101', msg)
                     continue
-                for p in platform_objs:
-                    confirmed_platforms.append(p)
+                confirmed_platforms.extend(iter(platform_objs))
                 continue
 
             for version in versions:
@@ -519,8 +513,7 @@ class RoleLoader(base.BaseLoader):
                     namespace__name=dep.namespace, name=dep.name)
                 confirmed_deps.append(dep_role)
             except Exception:
-                msg = u"Error loading dependency: '{}'".format(
-                    '.'.join([d for d in dep]))
+                msg = f"Error loading dependency: '{'.'.join(list(dep))}'"
                 self._on_lint_issue('importer', 'IMPORTER103', msg)
 
         self.data['dependencies'] = confirmed_deps

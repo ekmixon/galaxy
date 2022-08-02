@@ -137,9 +137,7 @@ class GithubAPI(object):
                     repo['commit_message'] = commit.message
                     repo['commit_url'] = commit.url
                     repo['commit_created'] = commit.author.date
-                repo['watchers_count'] = 0
-                for _ in gh_repo.get_subscribers():
-                    repo['watchers_count'] += 1
+                repo['watchers_count'] = sum(1 for _ in gh_repo.get_subscribers())
                 repos.append(repo)
                 break
 

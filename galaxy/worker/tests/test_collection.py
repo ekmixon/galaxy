@@ -8,7 +8,7 @@ from galaxy.main import models
 
 class TestDependencies(TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         super().setUpClass()
         ns1 = models.Namespace.objects.create(name='alice')
         col1 = models.Collection.objects.create(namespace=ns1, name='apache')

@@ -38,7 +38,7 @@ def test_flake8_ok():
 
         linter = linters.Flake8Linter()
         result = list(linter.check_files(fp.name))
-    assert result == []
+    assert not result
 
 
 FLAKE8_TEST_FILE_FAIL = """
@@ -84,7 +84,7 @@ def test_yamllint_ok():
 
         linter = linters.YamlLinter()
         result = list(linter.check_files(fp.name))
-    assert result == []
+    assert not result
 
 
 YAMLLINT_TEST_FILE_FAIL = """
@@ -148,7 +148,7 @@ def test_ansiblelint_ok(temp_root):
         linter = linters.AnsibleLinter()
         linter.root = get_ansiblelint_root(temp_root)
         result = list(linter.check_files(['.']))
-    assert result == []
+    assert not result
 
 
 ANSIBLELINT_TASK_WARN = """---

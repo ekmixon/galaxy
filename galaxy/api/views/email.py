@@ -35,10 +35,9 @@ class UserEmailList(base_views.SubListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs.get(self.lookup_field)
-        if not self.request.user.is_staff:
-            if self.request.user.id != int(user_id):
-                # Non-admin access own email addresses only
-                raise PermissionDenied()
+        if not self.request.user.is_staff and self.request.user.id != int(user_id):
+            # Non-admin access own email addresses only
+            raise PermissionDenied()
         return super().get_queryset()
 
 
@@ -61,10 +60,9 @@ class EmailDetail(base_views.RetrieveUpdateDestroyAPIView):
 
     def get_object(self, qs=None):
         obj = super().get_object()
-        if not self.request.user.is_staff:
-            if obj.user != self.request.user:
-                # Non-admin access own email addresses only
-                raise PermissionDenied()
+        if not self.request.user.is_staff and obj.user != self.request.user:
+            # Non-admin access own email addresses only
+            raise PermissionDenied()
         return obj
 
 

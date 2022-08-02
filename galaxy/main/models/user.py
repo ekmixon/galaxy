@@ -115,8 +115,7 @@ class UserAlias(models.Model):
     )
 
     def __str__(self):
-        return '{} (alias of {})'.format(
-            self.alias_name, self.alias_of.username)
+        return f'{self.alias_name} (alias of {self.alias_of.username})'
 
 
 class UserNotification(BaseModel):

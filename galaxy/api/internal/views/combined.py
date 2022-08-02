@@ -69,7 +69,7 @@ class RepoAndCollectionList(base.APIView):
         else:
             repos = models.Repository.objects.filter(
                 **repo_filters).order_by(order)
-            if len(name_filter) > 0:
+            if name_filter:
                 repos = repos.filter(
                     functools.reduce(operator.and_, name_filter))
             repo_count = repos.count()
@@ -80,7 +80,7 @@ class RepoAndCollectionList(base.APIView):
         else:
             collections = models.Collection.objects.filter(
                 **collection_filters).order_by(order)
-            if len(name_filter) > 0:
+            if name_filter:
                 collections = collections.filter(
                     functools.reduce(operator.and_, name_filter))
 
@@ -193,6 +193,8 @@ class CombinedDetail(base.APIView):
             return response.Response({'type': 'collection', 'data': data})
         except django_exceptions.ObjectDoesNotExist:
             raise exceptions.NotFound(
-                detail="No collection or repository could be found " +
-                "matching the name {}.{}".format(namespace, name)
+                detail=(
+                    "No collection or repository could be found "
+                    + f"matching the name {namespace}.{name}"
+                )
             )

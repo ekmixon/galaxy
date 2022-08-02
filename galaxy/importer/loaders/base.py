@@ -99,7 +99,7 @@ class BaseLoader(metaclass=abc.ABCMeta):
             linter_obj = linter_cls(self.root)
             for message in linter_obj.check_files(self.rel_path):
                 if linter_ok:
-                    self.log.info('{} Warnings:'.format(linter_obj.id))
+                    self.log.info(f'{linter_obj.id} Warnings:')
                     linter_ok = False
                 error_id, rule_desc = linter_obj.parse_id_and_desc(message)
                 if error_id:
@@ -109,7 +109,7 @@ class BaseLoader(metaclass=abc.ABCMeta):
                     self.log.warning(message)
                 all_linters_ok = False
             if linter_ok:
-                self.log.info('{} OK.'.format(linter_obj.id))
+                self.log.info(f'{linter_obj.id} OK.')
 
         return all_linters_ok
 

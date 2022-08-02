@@ -53,22 +53,20 @@ class InfluxSession(base_views.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         influx_session = ''
-        if not request.COOKIES.get('influx_session'):
-            influx_session = self.model.objects.create()
-        else:
-            influx_session = models.InfluxSessionIdentifier.objects.get(
+        influx_session = (
+            models.InfluxSessionIdentifier.objects.get(
                 session_id=request.COOKIES.get('influx_session')
             )
+            if request.COOKIES.get('influx_session')
+            else self.model.objects.create()
+        )
 
         serializer = self.get_serializer(instance=influx_session)
         headers = self.get_success_headers(serializer.data)
 
-        response = set_session(
-            Response(serializer.data, headers=headers),
-            influx_session.session_id
+        return set_session(
+            Response(serializer.data, headers=headers), influx_session.session_id
         )
-
-        return response
 
     def get(self, request, *args, **kwargs):
         return Response(
@@ -85,29 +83,24 @@ class InfluxMetrics(views.APIView):
         )
 
     def post(self, request):
-        serializer = self.load_serializer(request)
-        if serializer:
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-            response = set_session(
-                Response(serializer.data),
-                serializer.data['fields']['session_id']
+        if not (serializer := self.load_serializer(request)):
+            return Response(
+                'Measurement not supported.', status.HTTP_400_BAD_REQUEST
             )
-        else:
-            response = Response(
-                'Measurement not supported.',
-                status.HTTP_400_BAD_REQUEST
-            )
-        return response
+
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        return set_session(
+            Response(serializer.data), serializer.data['fields']['session_id']
+        )
 
     # Can't name this get_serializer() for some reason
     def load_serializer(self, request):
         if 'measurement' not in request.data:
             return None
-        if request.data['measurement'] in serializers.InfluxAPITypes:
-            serializer_type = serializers.InfluxAPITypes[
-                request.data['measurement']
-            ]
-            return serializer_type(data=request.data)
-        else:
+        if request.data['measurement'] not in serializers.InfluxAPITypes:
             return None
+        serializer_type = serializers.InfluxAPITypes[
+            request.data['measurement']
+        ]
+        return serializer_type(data=request.data)

@@ -58,7 +58,7 @@ class TestArtifactDownloadView(APITestCase):
     def setUp(self):
         super().setUp()
         self.sha256 = \
-            '01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b'
+                '01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b'
         self.storage_path = f'artifact/{self.sha256[:2]}/{self.sha256[2:]}'
         self.filename = 'mynamespace-mycollection-1.2.3.tar.gz'
 
@@ -102,7 +102,7 @@ class TestArtifactDownloadView(APITestCase):
         parsed_url = urlparse.urlparse(location)
         assert parsed_url.scheme == 'https'
         assert parsed_url.netloc == 'test.s3.amazonaws.com'
-        assert parsed_url.path == '/' + self.storage_path
+        assert parsed_url.path == f'/{self.storage_path}'
 
         query = urlparse.parse_qs(parsed_url.query)
         assert query['response-content-disposition'] == [

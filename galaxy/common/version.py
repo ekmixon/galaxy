@@ -47,9 +47,14 @@ def get_git_version():
     try:
         # TODO(cutwater): Replace `.decode('utf-8')` call with subprocess
         # parameter `encoding` after dropping Python 2.7 support.
-        tag_info = subprocess.check_output([
-            'git', 'describe', '--always', '--match', TAG_PREFIX + '*']
-        ).decode('utf-8').strip()
+        tag_info = (
+            subprocess.check_output(
+                ['git', 'describe', '--always', '--match', f'{TAG_PREFIX}*']
+            )
+            .decode('utf-8')
+            .strip()
+        )
+
     except subprocess.CalledProcessError:
         raise RuntimeError('Cannot determine git version string.')
 
@@ -76,14 +81,12 @@ def get_team_members():
     """
     Returns list of team members who have worked on Ansible Galaxy
     """
-    members = [
+    return [
         "chouseknecht",
         "cutwater",
         "alikins",
         "newswangerd",
         "awcrosby",
         "tima",
-        "gregdek"
+        "gregdek",
     ]
-
-    return members

@@ -32,9 +32,7 @@ class Enum(fields.Field):
         return self.enum(value)
 
     def _serialize(self, value, attr, obj):
-        if self.allow_none and value is None:
-            return None
-        return self.enum(value).value
+        return None if self.allow_none and value is None else self.enum(value).value
 
 
 _FILENAME_RE = re.compile(
@@ -55,14 +53,13 @@ class CollectionFilename(object):
 
     @classmethod
     def parse(cls, filename):
-        match = _FILENAME_RE.match(filename)
-        if not match:
+        if match := _FILENAME_RE.match(filename):
+            return cls(**match.groupdict())
+        else:
             raise ValueError(
                 'Invalid filename. Expected: '
                 '{namespace}-{name}-{version}.tar.gz'
             )
-
-        return cls(**match.groupdict())
 
     @namespace.validator
     @name.validator

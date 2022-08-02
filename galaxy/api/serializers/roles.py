@@ -74,8 +74,7 @@ class RoleListSerializer(BaseRoleSerializer):
         )
 
     def to_native(self, obj):
-        ret = super().to_native(obj)
-        return ret
+        return super().to_native(obj)
 
     def get_related(self, obj):
         if obj is None:
@@ -147,9 +146,7 @@ class RoleListSerializer(BaseRoleSerializer):
         return d
 
     def get_issue_tracker_url(self, obj):
-        if not obj:
-            return None
-        return obj.repository.issue_tracker_url
+        return obj.repository.issue_tracker_url if obj else None
 
 
 class RoleDetailSerializer(BaseRoleSerializer):
@@ -166,8 +163,7 @@ class RoleDetailSerializer(BaseRoleSerializer):
             'created', 'modified', 'download_count', 'imported')
 
     def to_native(self, obj):
-        ret = super().to_native(obj)
-        return ret
+        return super().to_native(obj)
 
     def get_related(self, obj):
         if obj is None:
@@ -215,14 +211,10 @@ class RoleDetailSerializer(BaseRoleSerializer):
         return d
 
     def get_readme(self, obj):
-        if obj.readme:
-            return obj.readme.raw
-        return None
+        return obj.readme.raw if obj.readme else None
 
     def get_readme_html(self, obj):
-        if obj.readme:
-            return obj.readme.html
-        return None
+        return obj.readme.html if obj.readme else None
 
 
 class RoleSearchSerializer(RoleListSerializer):

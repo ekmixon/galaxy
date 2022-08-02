@@ -85,7 +85,7 @@ class CustomUser(auth_models.AbstractBaseUser,
 
     # FIXME: replace with django.urls.reverse(..)
     def get_absolute_url(self):
-        return "/users/%s/" % urlquote(self.username)
+        return f"/users/{urlquote(self.username)}/"
 
     # FIXME: This method implementation is optional since Django 2.0
     def get_full_name(self):

@@ -138,11 +138,12 @@ def update_repo_score(repo):
     namespace = repo.provider_namespace.namespace.name
 
     fields = {
-        'content_name': '{}.{}'.format(namespace, repo.name),
+        'content_name': f'{namespace}.{repo.name}',
         'content_id': repo.id,
         'community_score': repo.community_score,
         'quality_score': repo.quality_score,
     }
+
 
     serializers.influx_insert_internal({
         'measurement': 'content_score',

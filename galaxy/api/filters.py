@@ -81,10 +81,7 @@ class _FieldLookupBackend(BaseFilterBackend):
         # those lookups combined with request.user.get_queryset(Model) to make
         # sure user cannot query using objects he could not view.
         for n, name in enumerate(parts[:-1]):
-            if name == 'pk':
-                field = model._meta.pk
-            else:
-                field = model._meta.get_field(name)
+            field = model._meta.pk if name == 'pk' else model._meta.get_field(name)
             if n < (len(parts) - 2):
                 if getattr(field, 'remote_field', None):
                     model = field.remote_field.model
@@ -94,22 +91,18 @@ class _FieldLookupBackend(BaseFilterBackend):
 
     def to_python_boolean(self, value, allow_none=False):
         value = str(value)
-        if value.lower() in ('true', '1'):
+        if value.lower() in {'true', '1'}:
             return True
-        elif value.lower() in ('false', '0'):
+        elif value.lower() in {'false', '0'}:
             return False
-        elif allow_none and value.lower() in ('none', 'null'):
+        elif allow_none and value.lower() in {'none', 'null'}:
             return None
         else:
-            raise ValueError(
-                u'Unable to convert "{}" to boolean'.format(value))
+            raise ValueError(f'Unable to convert "{value}" to boolean')
 
     def to_python_related(self, value):
         value = str(value)
-        if value.lower() in ('none', 'null'):
-            return None
-        else:
-            return int(value)
+        return None if value.lower() in {'none', 'null'} else int(value)
 
     def value_to_python_for_field(self, field, value):
         if isinstance(field, models.NullBooleanField):
@@ -126,9 +119,11 @@ class _FieldLookupBackend(BaseFilterBackend):
         if lookup.endswith('__isnull'):
             value = self.to_python_boolean(value)
         elif lookup.endswith('__in'):
-            items = []
-            for item in value.split(','):
-                items.append(self.value_to_python_for_field(field, item))
+            items = [
+                self.value_to_python_for_field(field, item)
+                for item in value.split(',')
+            ]
+
             value = items
         elif lookup.endswith('__regex') or lookup.endswith('__iregex'):
             try:
@@ -182,14 +177,10 @@ class _FieldLookupBackend(BaseFilterBackend):
                 if key in self.RESERVED_NAMES:
                     continue
                 if key in self.SENSITIVE_NAMES:
-                    raise ValidationError(
-                        "Your are not authorized to query on %s" % key
-                    )
+                    raise ValidationError(f"Your are not authorized to query on {key}")
                 for sensitive_fn in self.SENSITIVE_NAMES:
                     if sensitive_fn in key:
-                        raise ValidationError(
-                            "Your are not authorized to query on %s" % key
-                        )
+                        raise ValidationError(f"Your are not authorized to query on {key}")
                 # Custom __int filter suffix (internal use only).
                 q_int = False
                 if key.endswith('__int'):
@@ -241,16 +232,11 @@ class _FieldLookupBackend(BaseFilterBackend):
                     args.append(q)
                 queryset = queryset.filter(*args)
                 for n, k, v in chain_filters:
-                    if n:
-                        q = ~Q(**{k: v})
-                    else:
-                        q = Q(**{k: v})
+                    q = ~Q(**{k: v}) if n else Q(**{k: v})
                     queryset = queryset.filter(q)
             return queryset
         except (FieldError, FieldDoesNotExist, ValueError) as e:
             raise ParseError(e.args[0])
-        except ValidationError as e:
-            raise ParseError(e.messages)
 
 
 class FieldLookupBackend(_FieldLookupBackend):
@@ -270,10 +256,7 @@ class OrderByBackend(BaseFilterBackend):
             order_by = None
             for key, value in request.GET.items():
                 if key in ('order', 'order_by'):
-                    if ',' in value:
-                        order_by = value.split(',')
-                    else:
-                        order_by = (value,)
+                    order_by = value.split(',') if ',' in value else (value, )
             if order_by:
                 # FIXME(cutwater): Queryset should not be executed here.
                 # To validate order_by fields a list of model fields should

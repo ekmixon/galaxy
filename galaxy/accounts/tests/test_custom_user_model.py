@@ -297,9 +297,9 @@ class TestCustomUserModel(TestCase):
                 email=self.VALID_EMAIL
             )
             CustomUser.objects.create(
-                username=self.VALID_USERNAME + "_",
-                email=self.VALID_EMAIL
+                username=f"{self.VALID_USERNAME}_", email=self.VALID_EMAIL
             )
+
 
         assert str(excinfo.value) == (
             'duplicate key value violates unique constraint '

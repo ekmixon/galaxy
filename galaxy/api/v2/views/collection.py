@@ -199,35 +199,35 @@ class CollectionListView(base.ListAPIView):
             )
 
     def _check_role_name_conflict(self, ns, name):
-        roles = models.Content.objects.filter(
+        if roles := models.Content.objects.filter(
             content_type__name=constants.ContentType.ROLE,
             repository__provider_namespace__namespace=ns,
             name=name,
-        )
-        if not roles:
+        ):
+            raise RepositoryNameError(
+                f'A role ({ns.name}.{name}) under the namespace {ns.name} '
+                'already exists, please use a different name for the collection, '
+                'or delete the role, '
+                'or rename the role via the meta/main.yml role_name attribute'
+            )
+        else:
             return
-        raise RepositoryNameError(
-            f'A role ({ns.name}.{name}) under the namespace {ns.name} '
-            'already exists, please use a different name for the collection, '
-            'or delete the role, '
-            'or rename the role via the meta/main.yml role_name attribute'
-        )
 
     def _check_multi_repo_name_conflict(self, ns, name):
-        multi_content_repos = models.Repository.objects.filter(
+        if multi_content_repos := models.Repository.objects.filter(
             format='multi',
             provider_namespace__namespace=ns,
             name__iexact=name,
-        )
-        if not multi_content_repos:
+        ):
+            raise RepositoryNameError(
+                f'A multi-content repo ({ns.name}.{name}) under the '
+                f'namespace {ns.name} already exists. '
+                'Multi-content repos are deprecated in favor of collections. '
+                'You can delete the multi-content repo and '
+                're-import the collection.'
+            )
+        else:
             return
-        raise RepositoryNameError(
-            f'A multi-content repo ({ns.name}.{name}) under the '
-            f'namespace {ns.name} already exists. '
-            'Multi-content repos are deprecated in favor of collections. '
-            'You can delete the multi-content repo and '
-            're-import the collection.'
-        )
 
     def _check_version_conflict(self, namespace, filename):
         """Validate that uploaded collection version does not exist."""

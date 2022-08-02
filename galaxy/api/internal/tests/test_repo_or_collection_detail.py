@@ -81,7 +81,7 @@ class TestRepoOrCollection(APITestCase):
         )
 
     def test_get_collection(self):
-        url = self.base_url + '?namespace=mynamespace&name=collection'
+        url = f'{self.base_url}?namespace=mynamespace&name=collection'
         resp = self.client.get(url).json()
         assert resp['type'] == 'collection'
         assert resp['data']['collection']['name'] == 'collection'
@@ -89,10 +89,10 @@ class TestRepoOrCollection(APITestCase):
         versions = resp['data']['collection']['all_versions']
         assert len(versions) == 1
         assert versions[0]['download_url'] == \
-            '/download/mynamespace-mycollection-1.0.0.tar.gz'
+                '/download/mynamespace-mycollection-1.0.0.tar.gz'
 
     def test_get_repo(self):
-        url = self.base_url + '?namespace=mynamespace&name=repo'
+        url = f'{self.base_url}?namespace=mynamespace&name=repo'
         resp = self.client.get(url).json()
         assert resp['type'] == 'repository'
         assert resp['data']['repository']['name'] == 'repo'
@@ -101,12 +101,12 @@ class TestRepoOrCollection(APITestCase):
     def test_get_bad_params(self):
         error = 'namespace and name parameters are required'
 
-        url = self.base_url + '?namespace=mynamespace'
+        url = f'{self.base_url}?namespace=mynamespace'
         resp = self.client.get(url)
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert resp.json()['message'] == error
 
-        url = self.base_url + '?name=role1'
+        url = f'{self.base_url}?name=role1'
         resp = self.client.get(url)
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert resp.json()['message'] == error
@@ -117,10 +117,10 @@ class TestRepoOrCollection(APITestCase):
         assert resp.json()['message'] == error
 
     def test_get_missing_object(self):
-        url = self.base_url + '?namespace=mynamespace&name=missing'
+        url = f'{self.base_url}?namespace=mynamespace&name=missing'
         resp = self.client.get(url)
 
         assert resp.status_code == status.HTTP_404_NOT_FOUND
         assert resp.json()['message'] == \
-            "No collection or repository could be found matching " + \
-            "the name mynamespace.missing"
+                "No collection or repository could be found matching " + \
+                "the name mynamespace.missing"

@@ -65,8 +65,7 @@ class ApbFinder(BaseFinder):
 
     def find_contents(self):
         self.log.debug('Content search - Looking for file "apb.yml"')
-        meta_path = _find_metadata(self.path, self.META_FILES)
-        if meta_path:
+        if meta_path := _find_metadata(self.path, self.META_FILES):
             meta_path = os.path.join(self.path, meta_path)
             return [Result(constants.ContentType.APB, '',
                            extra={'metadata_path': meta_path})]
@@ -81,8 +80,7 @@ class RoleFinder(BaseFinder):
     def find_contents(self):
         self.log.debug(
             'Content search - Looking for top level role metadata file')
-        meta_path = _find_metadata(self.path, ROLE_META_FILES)
-        if meta_path:
+        if meta_path := _find_metadata(self.path, ROLE_META_FILES):
             meta_path = os.path.join(self.path, meta_path)
             return [Result(constants.ContentType.ROLE, '',
                            extra={'metadata_path': meta_path})]
@@ -111,8 +109,7 @@ class FileSystemFinder(BaseFinder):
             if not os.path.exists(content_path):
                 continue
             # TODO(cutwater): Use `yield from` after migration to Python 3
-            for content in func(content_type, content_path):
-                yield content
+            yield from func(content_type, content_path)
 
     def _find_plugins(self, content_type, content_dir):
         for file_name in os.listdir(content_dir):
@@ -152,8 +149,7 @@ class FileSystemFinder(BaseFinder):
             elif content_type == constants.ContentType.MODULE:
                 yield content_type, 'plugins/modules', self._find_plugins
             else:
-                yield (content_type, 'plugins/' + content_type.value,
-                       self._find_plugins)
+                yield (content_type, f'plugins/{content_type.value}', self._find_plugins)
 
 
 class MetadataFinder(BaseFinder):

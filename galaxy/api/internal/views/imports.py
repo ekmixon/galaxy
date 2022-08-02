@@ -74,8 +74,7 @@ class NamespaceImportsList(base.ListAPIView):
             .values('pk', 'type', 'started_at')
         )
 
-        name = self.request.query_params.get('name')
-        if name:
+        if name := self.request.query_params.get('name'):
             qs = qs.filter(name__icontains=name)
 
         return qs
@@ -93,8 +92,7 @@ class NamespaceImportsList(base.ListAPIView):
             .order_by()
         )
 
-        name = self.request.query_params.get('name')
-        if name:
+        if name := self.request.query_params.get('name'):
             qs = qs.filter(repository__name__icontains=name)
 
         return qs
@@ -104,10 +102,10 @@ class NamespaceImportsList(base.ListAPIView):
         for record in records:
             to_load[record['type']].append(record['pk'])
 
-        loaded = {}
-        for tp, ids in to_load.items():
-            loaded[tp] = {
-                obj.pk: obj for obj in self.QS_BY_TYPE[tp].filter(pk__in=ids)}
+        loaded = {
+            tp: {obj.pk: obj for obj in self.QS_BY_TYPE[tp].filter(pk__in=ids)}
+            for tp, ids in to_load.items()
+        }
 
         for record in records:
             pk = record['pk']

@@ -41,9 +41,9 @@ class TestRepoAndCollectionList(APITestCase):
 
         for x in range(self.num_collections):
             collection = models.Collection.objects.create(
-                namespace=self.namespace,
-                name='Collection' + str(x),
+                namespace=self.namespace, name=f'Collection{str(x)}'
             )
+
 
             models.CollectionVersion.objects.create(
                 collection=collection,
@@ -52,7 +52,7 @@ class TestRepoAndCollectionList(APITestCase):
             )
 
         for x in range(self.num_repositories):
-            name = 'Repository' + str(x)
+            name = f'Repository{str(x)}'
             models.Repository.objects.create(
                 name=name,
                 original_name=name,
@@ -69,29 +69,29 @@ class TestRepoAndCollectionList(APITestCase):
             provider_namespace__namespace=self.namespace).order_by('name'))
 
     def test_get_page_1(self):
-        url = self.base_url + '?namespace=mynamespace'
+        url = f'{self.base_url}?namespace=mynamespace'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == 10
         assert resp['collection']['count'] == self.num_collections
         assert resp['collection']['results'][0]['name'] == \
-            self.collections[0].name
+                self.collections[0].name
         assert resp['collection']['results'][9]['name'] == \
-            self.collections[9].name
+                self.collections[9].name
 
         assert len(resp['repository']['results']) == 0
         assert resp['repository']['count'] == self.num_repositories
 
     def test_get_page_2(self):
-        url = self.base_url + '?namespace=mynamespace&page=2'
+        url = f'{self.base_url}?namespace=mynamespace&page=2'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == 8
         assert resp['collection']['count'] == self.num_collections
         assert resp['collection']['results'][0]['name'] == \
-            self.collections[10].name
+                self.collections[10].name
         assert resp['collection']['results'][7]['name'] == \
-            self.collections[17].name
+                self.collections[17].name
 
         assert len(resp['repository']['results']) == 2
         assert resp['repository']['count'] == self.num_repositories
@@ -99,7 +99,7 @@ class TestRepoAndCollectionList(APITestCase):
         assert resp['repository']['results'][1]['name'] == self.repos[1].name
 
     def test_get_page_3(self):
-        url = self.base_url + '?namespace=mynamespace&page=3'
+        url = f'{self.base_url}?namespace=mynamespace&page=3'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == 0
@@ -111,21 +111,21 @@ class TestRepoAndCollectionList(APITestCase):
         assert resp['repository']['results'][9]['name'] == self.repos[11].name
 
     def test_get_collections(self):
-        url = self.base_url + '?namespace=mynamespace&type=collection&page=2'
+        url = f'{self.base_url}?namespace=mynamespace&type=collection&page=2'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == 8
         assert resp['collection']['count'] == self.num_collections
         assert resp['collection']['results'][0]['name'] == \
-            self.collections[10].name
+                self.collections[10].name
         assert resp['collection']['results'][7]['name'] == \
-            self.collections[17].name
+                self.collections[17].name
 
         assert len(resp['repository']['results']) == 0
         assert resp['repository']['count'] == 0
 
     def test_get_repositories(self):
-        url = self.base_url + '?namespace=mynamespace&type=repository'
+        url = f'{self.base_url}?namespace=mynamespace&type=repository'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == 0
@@ -137,15 +137,15 @@ class TestRepoAndCollectionList(APITestCase):
         assert resp['repository']['results'][9]['name'] == self.repos[9].name
 
     def test_get_page_size_20(self):
-        url = self.base_url + '?namespace=mynamespace&page_size=20'
+        url = f'{self.base_url}?namespace=mynamespace&page_size=20'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == self.num_collections
         assert resp['collection']['count'] == 18
         assert resp['collection']['results'][0]['name'] == \
-            self.collections[0].name
+                self.collections[0].name
         assert resp['collection']['results'][17]['name'] == \
-            self.collections[17].name
+                self.collections[17].name
 
         assert len(resp['repository']['results']) == 2
         assert resp['repository']['count'] == self.num_repositories
@@ -153,7 +153,7 @@ class TestRepoAndCollectionList(APITestCase):
         assert resp['repository']['results'][1]['name'] == self.repos[1].name
 
     def test_get_filter_name(self):
-        url = self.base_url + '?namespace=mynamespace&name=repository'
+        url = f'{self.base_url}?namespace=mynamespace&name=repository'
         resp = self.client.get(url).json()
 
         assert len(resp['collection']['results']) == 0
@@ -172,14 +172,14 @@ class TestRepoAndCollectionList(APITestCase):
         assert resp.json()['message'] == 'The namespace parameter is required'
 
     def test_bad_pagination(self):
-        url = self.base_url + '?namespace=mynamespace&page=One'
+        url = f'{self.base_url}?namespace=mynamespace&page=One'
         resp = self.client.get(url)
 
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert resp.json()['message'] == 'Pagination values must be numbers'
 
     def test_bad_order(self):
-        url = self.base_url + '?namespace=mynamespace&order=66'
+        url = f'{self.base_url}?namespace=mynamespace&order=66'
         resp = self.client.get(url)
 
         assert resp.status_code == status.HTTP_400_BAD_REQUEST

@@ -30,10 +30,10 @@ class DirtyMixin(object):
     @property
     def is_dirty(self):
         missing = object()
-        for key, value in self._original_state.items():
-            if value != self.__dict__.get(key, missing):
-                return True
-        return False
+        return any(
+            value != self.__dict__.get(key, missing)
+            for key, value in self._original_state.items()
+        )
 
     def save(self, *args, **kwargs):
         state = dict(self.__dict__)

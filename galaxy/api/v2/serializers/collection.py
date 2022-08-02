@@ -106,7 +106,7 @@ class VersionDetailSerializer(serializers.ModelSerializer):
     def get_collection(self, obj):
         ns_name = obj.collection.namespace.name
         name = obj.collection.name
-        result = {
+        return {
             'id': obj.collection.pk,
             'href': reverse(
                 'api:v2:collection-detail',
@@ -115,7 +115,6 @@ class VersionDetailSerializer(serializers.ModelSerializer):
             ),
             'name': name,
         }
-        return result
 
 
 class CollectionSerializer(serializers.ModelSerializer):

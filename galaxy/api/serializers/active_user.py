@@ -26,34 +26,37 @@ class ActiveUserPreferencesSerializer(BaseSerializer):
         )
 
     def get_summary_fields(self, obj):
-        followed_repos = []
-        for repo in obj.repositories_followed.all():
-            followed_repos.append({
+        followed_repos = [
+            {
                 'id': repo.id,
                 'name': repo.name,
                 'namespace': repo.provider_namespace.namespace.name,
                 'description': repo.description,
-                'avatar': repo.provider_namespace.namespace.avatar_url
-            })
+                'avatar': repo.provider_namespace.namespace.avatar_url,
+            }
+            for repo in obj.repositories_followed.all()
+        ]
 
-        followed_ns = []
-        for ns in obj.namespaces_followed.all():
-            followed_ns.append({
+        followed_ns = [
+            {
                 'id': ns.id,
                 'name': ns.name,
                 'description': ns.description,
-                'avatar': ns.avatar_url
-            })
+                'avatar': ns.avatar_url,
+            }
+            for ns in obj.namespaces_followed.all()
+        ]
 
-        followed_collections = []
-        for col in obj.collections_followed.all():
-            followed_collections.append({
+        followed_collections = [
+            {
                 'id': col.id,
                 'name': col.name,
                 'namespace': col.namespace.name,
                 'description': col.latest_version.metadata['description'],
-                'avatar': col.namespace.avatar_url
-            })
+                'avatar': col.namespace.avatar_url,
+            }
+            for col in obj.collections_followed.all()
+        ]
 
         return {
             'repositories_followed': followed_repos,
@@ -86,17 +89,21 @@ class ActiveUserNotificationSerializer(BaseSerializer):
         )
 
     def get_repository(self, obj):
-        if not obj.repository:
-            return None
-        return {
-            'name': obj.repository.name,
-            'namespace': obj.repository.provider_namespace.namespace.name
-        }
+        return (
+            {
+                'name': obj.repository.name,
+                'namespace': obj.repository.provider_namespace.namespace.name,
+            }
+            if obj.repository
+            else None
+        )
 
     def get_collection(self, obj):
-        if not obj.collection:
-            return None
-        return {
-            'name': obj.collection.name,
-            'namespace': obj.collection.namespace.name,
-        }
+        return (
+            {
+                'name': obj.collection.name,
+                'namespace': obj.collection.namespace.name,
+            }
+            if obj.collection
+            else None
+        )

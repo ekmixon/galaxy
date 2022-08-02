@@ -283,10 +283,7 @@ class AuthorFollowerMeasurementSerializer(BaseMeasurement):
 
 def influx_insert_internal(data):
     if data['measurement'] not in InfluxInternalTypes:
-        log_error(
-            'Measurement "{}" not supported'.format(data['measurement']),
-            data
-        )
+        log_error(f"""Measurement "{data['measurement']}" not supported""", data)
         return
     influx = InfluxInternalTypes[data['measurement']]
     try:
@@ -299,14 +296,10 @@ def influx_insert_internal(data):
 
 
 def log_error(message, measurement):
-    stack = ''
+    stack = ''.join(str(line) for line in traceback.format_stack()[:-1])
 
-    for line in traceback.format_stack()[0:-1]:
-        stack += str(line)
-
-    msg = 'InfluxDB Error: {}\n'.format(message)
-    msg += 'Measurement: {}\n'.format(str(measurement))
-    msg += 'Stack Trace: \n{}'.format(stack)
+    msg = f'InfluxDB Error: {message}\n' + f'Measurement: {str(measurement)}\n'
+    msg += f'Stack Trace: \n{stack}'
 
     logger.error(msg)
 

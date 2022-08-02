@@ -75,7 +75,7 @@ class Flake8Linter(BaseLinter):
             error_id = None
 
         if not error_id:
-            logger.error('No error_id found in {} message'.format(self.cmd))
+            logger.error(f'No error_id found in {self.cmd} message')
             return None, None
 
         return error_id, rule_desc
@@ -102,7 +102,7 @@ class YamlLinter(BaseLinter):
             msg_parts = message.split(' ')
             rule_desc = ' '.join(msg_parts[2:])
 
-            error_id = 'YAML_{}'.format(msg_parts[1][1:-1]).upper()
+            error_id = f'YAML_{msg_parts[1][1:-1]}'.upper()
             if error_id not in ['YAML_ERROR', 'YAML_WARNING']:
                 error_id = None
 
@@ -110,7 +110,7 @@ class YamlLinter(BaseLinter):
             error_id = None
 
         if not error_id:
-            logger.error('No error_id found in {} message'.format(self.cmd))
+            logger.error(f'No error_id found in {self.cmd} message')
             return None, None
 
         return error_id, rule_desc
@@ -152,7 +152,7 @@ class AnsibleLinter(BaseLinter):
             error_id = None
 
         if not error_id:
-            logger.error('No error_id found in {} message'.format(self.cmd))
+            logger.error(f'No error_id found in {self.cmd} message')
             return None, None
 
         return error_id, rule_desc

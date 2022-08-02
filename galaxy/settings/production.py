@@ -93,13 +93,10 @@ ALLOWED_HOSTS = os.environ.get('GALAXY_ALLOWED_HOSTS', '*').split(',')
 # ---------------------------------------------------------
 
 # Define GALAXY_DB_URL=postgres://USER:PASSWORD@HOST:PORT/NAME
-DATABASES = {}
-
-if os.environ.get('GALAXY_DB_URL'):
-    DATABASES['default'] = dj_database_url.config(
-        env='GALAXY_DB_URL', conn_max_age=0)
-else:
-    DATABASES['default'] = {
+DATABASES = {
+    'default': dj_database_url.config(env='GALAXY_DB_URL', conn_max_age=0)
+    if os.environ.get('GALAXY_DB_URL')
+    else {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('GALAXY_DB_NAME', 'galaxy'),
         'USER': os.environ.get('GALAXY_DB_USER', 'galaxy'),
@@ -108,6 +105,8 @@ else:
         'PORT': int(os.environ.get('GALAXY_DB_PORT', 5432)),
         'CONN_MAX_AGE': 0,
     }
+}
+
 
 # Create default alias for worker logging
 DATABASES['logging'] = DATABASES['default'].copy()
@@ -209,7 +208,7 @@ WAIT_FOR = [
 ]
 
 ADMIN_URL_PATH = os.environ.get('GALAXY_ADMIN_PATH', 'admin')
-ADMIN_URL_PATTERN = r'^{}/'.format(ADMIN_URL_PATH)
+ADMIN_URL_PATTERN = f'^{ADMIN_URL_PATH}/'
 
 GITHUB_TASK_USERS = ['galaxytasks09']
 

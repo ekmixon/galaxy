@@ -224,11 +224,9 @@ class TestContentTypeModel(TestCase):
 
         assert ContentType.get(self.VALID_NAME_ENUM).id == content_type.id
         assert ContentType.get(self.VALID_NAME_ENUM.value).id == \
-            content_type.id
+                content_type.id
 
         with pytest.raises(ContentType.DoesNotExist) as excinfo:
             assert ContentType.get(self.VALID_NAME_OTHER)
 
-        assert str(excinfo.value) == str(
-            "ContentType matching query does not exist."
-        )
+        assert str(excinfo.value) == "ContentType matching query does not exist."

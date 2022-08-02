@@ -81,29 +81,24 @@ class CollectionSearch(BaseSearch):
         """Returns generic queryset used both for count and search."""
         qs = models.Collection.objects.order_by()
 
-        keywords = self.filters.get('keywords')
-        if keywords:
+        if keywords := self.filters.get('keywords'):
             qs = qs.filter(
                 search_vector=psql_search.SearchQuery(keywords))
 
-        ns_type = self.filters.get('contributor_type')
-        if ns_type:
+        if ns_type := self.filters.get('contributor_type'):
             qs = qs.filter(namespace__is_vendor=(
                 ns_type == constants.NS_TYPE_PARTNER))
 
-        namespaces = self.filters.get('namespaces')
-        if namespaces:
+        if namespaces := self.filters.get('namespaces'):
             filters = [Q(namespace__name__icontains=name)
                        for name in self.filters['namespaces']]
             qs = qs.filter(functools.reduce(operator.or_, filters))
 
-        names = self.filters.get('names')
-        if names:
+        if names := self.filters.get('names'):
             filters = [Q(name__icontains=name) for name in names]
             qs = qs.filter(functools.reduce(operator.or_, filters))
 
-        tags = self.filters.get('tags')
-        if tags:
+        if tags := self.filters.get('tags'):
             tags_qs = models.Collection.objects.only('pk').filter(
                 tags__name__in=tags)
             qs = qs.filter(pk__in=tags_qs)
@@ -169,7 +164,7 @@ class CollectionSearch(BaseSearch):
         order_by = self.order_by
         prefix = '-' if self.order == 'desc' else ''
         if order_by == 'qualname':
-            order_by = [prefix + 'namespace__name', prefix + 'name']
+            order_by = [f'{prefix}namespace__name', f'{prefix}name']
         else:
             order_by = [prefix + order_by]
         return qs.order_by(*order_by)
@@ -226,28 +221,23 @@ class ContentSearch(BaseSearch):
             repository__provider_namespace__namespace__active=True
         )
 
-        keywords = self.filters.get('keywords')
-        if keywords:
+        if keywords := self.filters.get('keywords'):
             qs = qs.filter(search_vector=psql_search.SearchQuery(keywords))
 
-        ns_type = self.filters.get('contributor_type')
-        if ns_type:
+        if ns_type := self.filters.get('contributor_type'):
             qs = qs.filter(namespace__is_vendor=(
                 ns_type == constants.NS_TYPE_PARTNER))
 
-        namespaces = self.filters.get('namespaces')
-        if namespaces:
+        if namespaces := self.filters.get('namespaces'):
             filters = [Q(namespace__name__icontains=name)
                        for name in self.filters['namespaces']]
             qs = qs.filter(functools.reduce(operator.or_, filters))
 
-        names = self.filters.get('names')
-        if names:
+        if names := self.filters.get('names'):
             filters = [Q(name__icontains=name) for name in names]
             qs = qs.filter(functools.reduce(operator.or_, filters))
 
-        tags = self.filters.get('tags')
-        if tags:
+        if tags := self.filters.get('tags'):
             tags_qs = models.Content.objects.only('pk').filter(
                 tags__name__in=tags)
             qs = qs.filter(pk__in=tags_qs)
@@ -256,14 +246,12 @@ class ContentSearch(BaseSearch):
         if deprecated is not None:
             qs = qs.filter(repository__deprecated=deprecated)
 
-        platforms = self.filters.get('platforms')
-        if platforms:
+        if platforms := self.filters.get('platforms'):
             platforms_qs = models.Content.objects.only('pk').filter(
                 platforms__name__in=platforms)
             qs = qs.filter(pk__in=platforms_qs)
 
-        clouds = self.filters.get('cloud_platforms')
-        if clouds:
+        if clouds := self.filters.get('cloud_platforms'):
             cloud_qs = models.Content.objects.only('pk').filter(
                 cloud_platforms__name__in=clouds)
             qs = qs.filter(pk__in=cloud_qs)
@@ -375,9 +363,9 @@ class ContentSearch(BaseSearch):
         order_by = self.order_by
         prefix = '-' if self.order == 'desc' else ''
         if order_by == 'qualname':
-            order_by = [prefix + 'namespace__name', prefix + 'name']
+            order_by = [f'{prefix}namespace__name', f'{prefix}name']
         elif order_by == 'download_count':
-            order_by = [prefix + 'repository__download_count']
+            order_by = [f'{prefix}repository__download_count']
         else:
             order_by = [prefix + order_by]
         return qs.order_by(*order_by)

@@ -43,9 +43,7 @@ def convert_none_to_empty_dict(val):
 
     # if val is not a dict or val 'None' return val
     # and let the validators raise errors later
-    if val is None:
-        return {}
-    return val
+    return {} if val is None else val
 
 
 class Content(object):

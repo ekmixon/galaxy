@@ -134,8 +134,7 @@ class Repository(BaseModel):
         download_url = self.provider_namespace.provider.download_url
 
         if ref is None:
-            last_version = self.last_version()
-            if last_version:
+            if last_version := self.last_version():
                 ref = last_version.tag
             else:
                 ref = self.import_branch
@@ -152,10 +151,7 @@ class Repository(BaseModel):
                       reverse=True)
 
     def last_version(self):
-        versions = self.all_versions()
-        if versions:
-            return versions[0]
-        return None
+        return versions[0] if (versions := self.all_versions()) else None
 
 
 class RepositoryVersion(BaseModel):
@@ -174,11 +170,7 @@ class RepositoryVersion(BaseModel):
     commit_date = models.DateTimeField(null=True)
 
     def __str__(self):
-        return "{}.{}-{}".format(
-            self.repository.provider_namespace.name,
-            self.repository.name,
-            self.version
-        )
+        return f"{self.repository.provider_namespace.name}.{self.repository.name}-{self.version}"
 
 
 class RepositorySurvey(SurveyBase):
@@ -209,11 +201,10 @@ class Readme(BaseModel):
     html = models.TextField(null=False, blank=False)
 
     def safe_delete(self):
-        ref_count = (
-                Repository.objects.filter(readme=self).count()
-                + Content.objects.filter(readme=self).count()
-        )
-        if ref_count:
+        if ref_count := (
+            Repository.objects.filter(readme=self).count()
+            + Content.objects.filter(readme=self).count()
+        ):
             return False
 
         self.delete()

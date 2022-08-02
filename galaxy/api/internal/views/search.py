@@ -47,9 +47,7 @@ def _ensure_positive_int(string, field, cutoff=None):
         raise exceptions.ValidationError(detail=msg)
     if value < 0:
         raise exceptions.ValidationError(detail=msg)
-    if cutoff is not None:
-        return min(value, cutoff)
-    return value
+    return min(value, cutoff) if cutoff is not None else value
 
 
 # TODO(cutwater): Lazy pagination

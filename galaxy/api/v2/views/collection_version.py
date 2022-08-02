@@ -62,8 +62,7 @@ class VersionListView(base.ListAPIView):
 
     def _get_collection(self):
         """Get collection from either id, or namespace and name."""
-        pk = self.kwargs.get('pk', None)
-        if pk:
+        if pk := self.kwargs.get('pk', None):
             return get_object_or_404(models.Collection, pk=pk)
 
         ns_name = self.kwargs.get('namespace', None)
@@ -91,13 +90,12 @@ class VersionDetailView(base.APIView):
         version_str = self.kwargs.get('version', None)
         if version_pk:
             return get_object_or_404(models.CollectionVersion, pk=version_pk)
-        else:
-            collection = self._get_collection()
-            return get_object_or_404(
-                models.CollectionVersion,
-                collection=collection,
-                version=version_str,
-            )
+        collection = self._get_collection()
+        return get_object_or_404(
+            models.CollectionVersion,
+            collection=collection,
+            version=version_str,
+        )
 
     def _get_collection(self):
         """Get collection from namespace and name."""

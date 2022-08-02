@@ -52,10 +52,9 @@ logger = logging.getLogger(__name__)
 def get_repo(provider_namespace, user, repo_name):
     repo = {}
     if provider_namespace.provider.name.lower() == 'github':
-        # Check that the user has access to the requested repo
-        repos = GithubAPI(user=user).get_namespace_repositories(
-            provider_namespace.name, name=repo_name)
-        if repos:
+        if repos := GithubAPI(user=user).get_namespace_repositories(
+            provider_namespace.name, name=repo_name
+        ):
             repo = repos[0]
     return repo
 
@@ -159,7 +158,7 @@ class RepositoryList(views.ListCreateAPIView):
         serializer = self.get_serializer(repository)
         data = serializer.data
         data['summary_fields']['latest_import'] = \
-            serializers.ImportTaskDetailSerializer(import_task).data
+                serializers.ImportTaskDetailSerializer(import_task).data
         headers = self.get_success_headers(data)
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -246,7 +245,7 @@ class RepositoryDetail(views.RetrieveUpdateDestroyAPIView):
             )
 
             data['summary_fields']['latest_import'] = \
-                serializers.ImportTaskDetailSerializer(import_task).data
+                    serializers.ImportTaskDetailSerializer(import_task).data
         return Response(data)
 
     def destroy(self, request, *args, **kwargs):

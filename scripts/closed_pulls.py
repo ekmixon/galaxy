@@ -11,7 +11,7 @@ def closed_pulls(branch):
     }
     response = requests.get('https://api.github.com/repos/ansible/galaxy/pulls', params=params)
     for issue in response.json():
-        print("- `%s %s <%s>`_" % (issue['number'], issue['title'], issue['html_url']))
+        print(f"- `{issue['number']} {issue['title']} <{issue['html_url']}>`_")
 
 def main():
     parser = argparse.ArgumentParser(description='List closed pull requests.') 

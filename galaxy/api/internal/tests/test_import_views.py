@@ -133,39 +133,40 @@ class TestNamespaceImportsList(APITestCase):
         assert results[0] == {
             'id': task.id,
             'type': 'repository',
-            'href': 'http://testserver/api/v1/imports/{}/'.format(task.id),
+            'href': f'http://testserver/api/v1/imports/{task.id}/',
             'name': 'myrepo1',
             'namespace': {
                 'id': self.namespace.id,
-                'href': 'http://testserver/api/v1/'
-                        'namespaces/{}/'.format(ns.id),
+                'href': f'http://testserver/api/v1/namespaces/{ns.id}/',
                 'name': self.namespace.name,
             },
             'state': 'completed',
             'started_at': timezone.localtime(
-                self.repo_imports[0].started).isoformat(),
+                self.repo_imports[0].started
+            ).isoformat(),
             'finished_at': timezone.localtime(
-                self.repo_imports[0].finished).isoformat(),
+                self.repo_imports[0].finished
+            ).isoformat(),
         }
+
 
         task = self.collection_imports[0]
         assert results[1] == {
             'id': task.id,
             'type': 'collection',
-            'href': ('http://testserver/api/v2/'
-                     'collection-imports/{}/'.format(task.id)),
+            'href': f'http://testserver/api/v2/collection-imports/{task.id}/',
             'name': 'mycollection1',
             'version': '0.9.9',
             'namespace': {
                 'id': self.namespace.id,
-                'href': 'http://testserver/api/v1/'
-                        'namespaces/{}/'.format(ns.id),
+                'href': f'http://testserver/api/v1/namespaces/{ns.id}/',
                 'name': self.namespace.name,
             },
             'state': 'waiting',
             'started_at': timezone.localtime(task.started_at).isoformat(),
             'finished_at': None,
         }
+
 
         self.assertDictContainsSubset({
             'name': 'myrepo2',

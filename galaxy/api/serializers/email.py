@@ -15,11 +15,13 @@ __all__ = [
 class IsVerified(object):
 
     def __call__(self, value):
-        if self.instance and self.instance.verified:
-            # This is an Update to a verified address
-            if self.instance.email != self.data.get('email'):
-                message = 'Verified email addresses cannot be modified'
-                raise serializers.ValidationError(message)
+        if (
+            self.instance
+            and self.instance.verified
+            and self.instance.email != self.data.get('email')
+        ):
+            message = 'Verified email addresses cannot be modified'
+            raise serializers.ValidationError(message)
 
     def set_context(self, serializer_field):
         self.instance = getattr(serializer_field.parent, 'instance', None)
@@ -58,9 +60,7 @@ class EmailSerializer(BaseSerializer):
         ]
 
     def get_url(self, obj):
-        if obj is None:
-            return ''
-        return reverse('api:email_detail', args=(obj.pk,))
+        return '' if obj is None else reverse('api:email_detail', args=(obj.pk,))
 
     def get_related(self, obj):
         d = super().get_related(obj)

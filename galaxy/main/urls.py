@@ -31,11 +31,22 @@ if settings.DEBUG:
     ]
 else:
     urlpatterns += [
-        url(r'^static/(?P<path>.*)$',
-            serve_static, kwargs={'document_root': settings.STATIC_ROOT}),
-        url(r'^(?P<path>.*(?:css|js|png|jpg|jpeg|ico|woff|woff2|svg|ttf))/?$',
-            serve_static, kwargs={'document_root': settings.STATIC_ROOT}),
-        url(r'^(?!api|static|accounts|{})'.format(settings.ADMIN_URL_PATH),
-            serve_static, kwargs={'document_root': settings.STATIC_ROOT,
-                                  'path': 'index.html'})
+        url(
+            r'^static/(?P<path>.*)$',
+            serve_static,
+            kwargs={'document_root': settings.STATIC_ROOT},
+        ),
+        url(
+            r'^(?P<path>.*(?:css|js|png|jpg|jpeg|ico|woff|woff2|svg|ttf))/?$',
+            serve_static,
+            kwargs={'document_root': settings.STATIC_ROOT},
+        ),
+        url(
+            f'^(?!api|static|accounts|{settings.ADMIN_URL_PATH})',
+            serve_static,
+            kwargs={
+                'document_root': settings.STATIC_ROOT,
+                'path': 'index.html',
+            },
+        ),
     ]

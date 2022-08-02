@@ -101,8 +101,7 @@ class TestProviderModel(TestCase):
 
         # does not raise
         Provider(
-            name=self.VALID_NAME + "_",
-            download_url=self.VALID_DOWNLOAD_URL
+            name=f"{self.VALID_NAME}_", download_url=self.VALID_DOWNLOAD_URL
         ).full_clean()
 
     @pytest.mark.database_integrity

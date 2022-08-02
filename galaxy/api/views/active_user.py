@@ -42,10 +42,10 @@ class ActiveUserPreferencesView(base_views.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
 
         repos = set(serializer.validated_data['repositories_followed']) ^ \
-            set(instance.repositories_followed.all())
+                set(instance.repositories_followed.all())
 
         authors = set(serializer.validated_data['namespaces_followed']) ^ \
-            set(instance.namespaces_followed.all())
+                set(instance.namespaces_followed.all())
 
         serializer.save()
 
@@ -54,10 +54,11 @@ class ActiveUserPreferencesView(base_views.RetrieveUpdateAPIView):
                 repositories_followed=repo).count()
             name = repo.provider_namespace.namespace.name
             fields = {
-                'content_name': '{}.{}'.format(name, repo.name),
+                'content_name': f'{name}.{repo.name}',
                 'content_id': repo.id,
                 'follower_count': count,
             }
+
 
             serializers.influx_insert_internal({
                 'measurement': 'content_follower',
@@ -112,10 +113,9 @@ class ActiveUserNotificationsDetailView(
     view_name = 'my_notifications_detail'
 
     def get_queryset(self):
-        obj = self.model.objects.filter(
+        return self.model.objects.filter(
             user=self.request.user,
         )
-        return obj
 
 
 class ActiveUserClearNotificationView(base_views.APIView):
