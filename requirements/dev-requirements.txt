@@ -102,7 +102,7 @@ django-prometheus==1.0.15
     # via -r requirements/requirements.in
 django-storages[boto3]==1.7.1
     # via -r requirements/requirements.in
-django==2.2.19
+django==3.2.15
     # via
     #   -r requirements/requirements.in
     #   django-allauth
@@ -117,7 +117,7 @@ django==2.2.19
     #   pulpcore
 djangorestframework-queryfields==1.0.0
     # via pulpcore
-djangorestframework==3.7.7
+djangorestframework==3.11.2
     # via
     #   -r requirements/requirements.in
     #   drf-nested-routers
@@ -162,7 +162,7 @@ influxdb==5.2.1
     # via -r requirements/requirements.in
 itypes==1.1.0
     # via coreapi
-jinja2==2.10.1
+jinja2==2.11.3
     # via
     #   ansible
     #   coreschema
@@ -329,7 +329,7 @@ sphinx==1.7.9
     # via -r requirements/requirements.in
 sphinxcontrib-websupport==1.1.0
     # via sphinx
-sqlparse==0.2.4
+sqlparse==0.4.2
     # via
     #   django
     #   django-debug-toolbar
@@ -343,7 +343,7 @@ uritemplate==3.0.0
     # via
     #   coreapi
     #   drf-yasg
-urllib3==1.24.3
+urllib3==1.26.5
     # via
     #   botocore
     #   requests
