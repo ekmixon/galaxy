@@ -227,7 +227,7 @@ pyflakes==2.1.0
     # via flake8
 pygithub==1.43.3
     # via -r requirements/requirements.in
-pygments==2.8.1
+pygments==2.15.0
     # via
     #   rich
     #   sphinx
