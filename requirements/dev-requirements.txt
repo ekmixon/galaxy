@@ -47,7 +47,7 @@ celery==3.1.24
     # via
     #   -r requirements/requirements.in
     #   django-celery
-certifi==2018.11.29
+certifi==2023.7.22
     # via requests
 cffi==1.14.5
     # via cryptography
@@ -325,7 +325,7 @@ six==1.12.0
     #   sphinx
 snowballstemmer==1.2.1
     # via sphinx
-sphinx==1.7.9
+sphinx==3.0.4
     # via -r requirements/requirements.in
 sphinxcontrib-websupport==1.1.0
     # via sphinx
