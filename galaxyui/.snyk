@@ -1,0 +1,48 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - '@angular-devkit/build-angular > stats-webpack-plugin > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: '@angular-devkit/build-angular > stats-webpack-plugin > lodash'
+    - '@angular-devkit/build-angular > webpack-merge > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: '@angular-devkit/build-angular > webpack-merge > lodash'
+    - '@angular-devkit/build-angular > source-map-loader > async > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: '@angular-devkit/build-angular > source-map-loader > async > lodash'
+    - '@angular-devkit/build-angular > webpack-dev-server > http-proxy-middleware > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          @angular-devkit/build-angular > webpack-dev-server >
+          http-proxy-middleware > lodash
+    - '@angular-devkit/build-angular > istanbul-instrumenter-loader > istanbul-lib-instrument > babel-generator > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          @angular-devkit/build-angular > istanbul-instrumenter-loader >
+          istanbul-lib-instrument > babel-generator > lodash
+    - '@angular-devkit/build-angular > istanbul-instrumenter-loader > istanbul-lib-instrument > babel-template > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          @angular-devkit/build-angular > istanbul-instrumenter-loader >
+          istanbul-lib-instrument > babel-template > lodash
+    - '@angular-devkit/build-angular > istanbul-instrumenter-loader > istanbul-lib-instrument > babel-generator > babel-types > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          @angular-devkit/build-angular > istanbul-instrumenter-loader >
+          istanbul-lib-instrument > babel-generator > babel-types > lodash
+    - '@angular-devkit/build-angular > istanbul-instrumenter-loader > istanbul-lib-instrument > babel-template > babel-traverse > lodash':
+        patched: '2024-08-03T15:39:18.179Z'
+        id: SNYK-JS-LODASH-567746
+        path: >-
+          @angular-devkit/build-angular > istanbul-instrumenter-loader >
+          istanbul-lib-instrument > babel-template > babel-traverse > lodash
